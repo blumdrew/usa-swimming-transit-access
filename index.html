@@ -1,1 +1,317 @@
-Lorem ipsum
+<!DOCTYPE html>
+<!-- https://docs.mapbox.com/mapbox-gl-js/example/updating-choropleth/ -->
+<html>
+
+<head>
+    <meta name="viewport" content="user-scalable = yes">
+    <title>USA Swimming Transit Access</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+</head>
+
+
+<body>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    #map {
+        position: absolute;
+        top: 175px;
+        bottom: 0px;
+        width: 100%;
+    }
+
+    h3 {
+        font-size: 16px;
+        font-family: 'Roboto';
+    }
+
+    h2 {
+        font-size: 18px;
+        font-family: 'Roboto';
+    }
+    h4 {
+        font-size: 14px;
+        font-family: 'Roboto';
+    }
+    h5 {
+        font-size: 8px;
+        font-family: 'Roboto';
+    }
+
+    .map-title {
+        font-family: 'Roboto';
+        position: relative;
+        top: 0px;
+        text-align: center;
+        font-size: 14px;
+    }
+
+    .legend {
+        font-family: 'Roboto';
+        position: relative;
+        text-align: center;
+        font-size: 12px;
+    }
+
+    .drop-down-menu{
+        font-family: 'Roboto';
+        font-size: 12px;
+        width: 100px;
+    }
+
+    .column {
+        float: left;
+        width: 50%;
+    }
+    /* Clear floats after the columns */
+    .row:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    </style>
+    <!-- Load the `mapbox-gl-geocoder` plugin. -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
+    <div id="map-title" class="map-title"><h1>USA Swimming Transit Access</h1></div><hr>
+    <div id="legend" class="legend">
+        <div id="selector-container" class="column">
+            <div id="cbsa-selector-container">
+                <label for="cbsa-selector"><b>Select a metro area:</b></label>
+                <select name="cbsa-selector" id="cbsa-selector" class="drop-down-menu">
+                    <option value="New York">New York</option>
+                    <option value="Los Angeles">Los Angeles</option>
+                    <option value="Chicago">Chicago</option>
+                    <option value="Dallas">Dallas</option>
+                    <option value="Houston">Houston</option>
+                    <option value="Miami">Miami</option>
+                    <option value="Washington">Washington DC</option>
+                    <option value="Atlanta">Atlanta</option>
+                    <option value="Philadelphia">Philadelphia</option>
+                    <option value="Phoenix">Phoenix</option>
+                    <option value="Seattle">Seattle</option>
+                    <option value="Milwaukee">Milwaukee</option>
+                </select>
+            </div>
+            <div id="data-selector-container">
+                <label for="data-selector"><b>Display data for:</b></label>
+                <select name="data-selector" id="data-selector" class="drop-down-menu">
+                    <option value="cbsa">Metro Area</option>
+                    <option value="club">Clubs</option>
+                    <option value="pool">Pools</option>
+                </select>
+            </div>
+            <div id="pool-club-filter-container">
+                <label for="filter-selector"><b>Filter by pool/club:</b></label>
+                <select name="data-filter" id="data-filter" class="drop-down-menu">
+                </select>
+            </div>
+            <div id="data-filter-value" style="display: none">cbsa</div>
+            <div id="fly-to-metro-button-container">
+                <button id="fly-to-metro-button">Fly to Selected Metro</button>
+            </div>
+        </div>
+        <div id="legend-text" class="column">
+            placeholder
+        </div>
+    </div>
+    <div id="map"></div>
+    <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYmx1bWRyZXciLCJhIjoiY203bnZqcmc1MDU3czJtcHVtOWtuejg3cyJ9.BtyyyhiVLkUXZJP06fW7Aw';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [-74, 40.7],
+        minZoom: 5,
+        zoom: 8,
+        attributionControl: false
+    });
+    var cbsa_value = document.getElementById("cbsa-selector").value
+    var data_selector_value = document.getElementById("data-selector").value
+    console.log(cbsa_value)
+    console.log(data_selector_value)
+    map.on('load',() => {
+        // Make pointer default
+        map.getCanvas().style.cursor = 'default';
+
+        // add tilesets
+        map.addSource('isochrones', {
+            'type': 'vector',
+            'url': 'mapbox://blumdrew.usa_swim_full_v4' // change as needed
+        });
+        map.addSource('pools', {
+            'type': 'vector',
+            'url': 'mapbox://blumdrew.usa_swim_pools_v1' // change as needed
+        });
+        map.addLayer({
+                'id': 'pool-isochrones',
+                'source': 'isochrones',
+                'source-layer': 'cbsa_pools',
+                'type': 'line',
+                'filter': ["all",
+                    ['==', 'cbsa_name', 'New York'],
+                    ['==', 'layer_name', 'cbsa']
+                ],
+                layout: {
+                    visibility: 'visible'
+                },
+                paint: {
+                    'line-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'population_pct'],
+                        0, "#FFFFFF",
+                        5, "#fecc5c",
+                        15, "#fd8d3c",
+                        25, "#f03b20",
+                        50, "#51087e"
+                    ],
+                }
+            },
+            'continent-label' // Add layer below labels
+        );
+        map.addLayer({
+                'id': 'pool-isochrones-fill',
+                'source': 'isochrones',
+                'source-layer': 'cbsa_pools',
+                'type': 'fill',
+                'filter': ["all",
+                    ['==', 'cbsa_name', 'New York'],
+                    ['==', 'layer_name', 'cbsa']
+                ],
+                layout: {
+                    visibility: 'visible'
+                },
+                paint: {
+                    'fill-color':"#ffffff",
+                    'fill-opacity':0.1
+                }
+            },
+            'continent-label' // Add layer below labels
+        );
+
+        map.addLayer({
+                'id': 'pool-locations',
+                'source': 'pools',
+                'source-layer': 'pools',
+                'type': 'circle',
+                'filter': ['in', "New York", ['string', ['get', "NAME"]]],
+                layout: {
+                    visibility: 'visible'
+                },
+                paint: {
+                    'circle-color': [
+                        'match',
+                        ['get', 'level'],
+                        'Gold','#d4af37',
+                        'Silver','#c1c9c2',
+                        'Bronze','#ad4d00',
+                        /* other */ '#ccc'
+                    ]
+                }
+            },
+            'continent-label' // Add layer below labels
+        );
+    });
+
+    map.on("idle", () =>{
+        //// UPDATE MAP FILTERS
+        var cbsa_value = document.getElementById("cbsa-selector").value;
+        var data_selector_value = document.getElementById("data-selector").value;
+        map.setFilter('pool-isochrones',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value]]);
+        map.setFilter('pool-isochrones-fill',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value]]);
+        map.setFilter('pool-locations',['in', cbsa_value, ['string', ['get', 'NAME']]]);
+
+        // determine what pools are available
+        var features = map.querySourceFeatures(
+            "isochrones",
+            {
+                sourceLayer: 'cbsa_pools',
+                filter: ['==','cbsa_name',cbsa_value]
+            }
+        );
+        var properties = features.map(features => features.properties);
+        if (data_selector_value == "pool") {
+            // create the list of pools that are filterable based on the queried data
+            var filter_options = properties.map(properties => properties.pool_name);
+            filter_options = [...new Set(filter_options)];
+            filter_options = filter_options.filter(n=>n!=undefined).sort();
+            var filter_options_html = filter_options.map((filter_options, index) => `<option value=${index+1}>${filter_options}</option>`);
+            if (document.getElementById("data-filter-value").innerHTML != "pool"){
+                document.getElementById("data-filter").innerHTML = "<option value=0>(all)</option>" + filter_options_html;
+                document.getElementById("data-filter-value").innerHTML = data_selector_value;
+            }
+        } else if (data_selector_value == "club"){
+            // create the list of clubs that are filterable based on the queried data
+            var filter_options = properties.map(properties => properties.club_name);
+            filter_options = [...new Set(filter_options)];
+            filter_options = filter_options.filter(n=>n!=undefined).sort();
+            var filter_options_html = filter_options.map((filter_options, index) => `<option value=${index+1}>${filter_options}</option>`);
+            if (document.getElementById("data-filter-value").innerHTML != "club"){
+                document.getElementById("data-filter").innerHTML = "<option value=0>(all)</option>" + filter_options_html;
+                document.getElementById("data-filter-value").innerHTML = data_selector_value;
+            }
+        } else {
+            var filter_options = [];
+            var filter_options_html = '';
+            if (document.getElementById("data-filter").innerHTML != data_selector_value){
+                document.getElementById("data-filter").innerHTML = filter_options_html;
+                document.getElementById("data-filter-value").innerHTML = data_selector_value;
+            }
+        }
+
+        if (data_selector_value != "cbsa"){
+            var data_filter = document.querySelector("#data-filter");
+            var filter_value = data_filter.options[data_filter.selectedIndex].innerHTML
+            if ((data_selector_value == "pool") & (filter_value != '(all)')){
+                map.setFilter('pool-isochrones',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value],["==","pool_name",filter_value]]);
+                map.setFilter('pool-isochrones-fill',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value],["==","pool_name",filter_value]]);
+                map.setFilter('pool-locations',['==','pool_name',filter_value]);
+                // set html for text in legend showing the demographics of the selected area
+            } else if ((data_selector_value == "club") & (filter_value != '(all)')){
+                map.setFilter('pool-isochrones',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value],["==","club_name",filter_value]]);
+                map.setFilter('pool-isochrones-fill',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value],["==","club_name",filter_value]]);
+                map.setFilter('pool-locations',["==","club_name",filter_value]);
+            } 
+        }
+    });
+
+    button = document.getElementById("fly-to-metro-button")
+    button.addEventListener('click', () => {
+        var cbsa_value = document.getElementById("cbsa-selector").value;
+        const fly_to_dict = {
+            "New York":[-74, 40.7],
+            "Los Angeles":[-118.2, 34],
+            "Chicago":[-87.6, 41.9],
+            "Dallas":[-97, 32.8],
+            "Houston":[-95.4,29.7],
+            "Miami":[-80.2,25.9],
+            "Washington":[-77,39],
+            "Atlanta":[-84.4,33.7],
+            "Philadelphia":[-75.2,39.9],
+            "Phoenix":[-112.1,33.4],
+            "Seattle":[-122.3,47.6],
+            "Milwaukee":[-87.9,43.1],
+        }
+        map.flyTo({
+            center:fly_to_dict[cbsa_value],
+            essential: true // this animation is considered essential with respect to prefers-reduced-motion
+        });
+        // set data to display at metro level
+        document.getElementById('data-selector').value = 'cbsa';
+    });
+    map.addControl(new mapboxgl.AttributionControl({
+        customAttribution: 'Map: Andrew Lindstrom | Source: Mobility Database, US Census Bureau'
+    }));
+    
+</script>
+
+</body>
+</html>
