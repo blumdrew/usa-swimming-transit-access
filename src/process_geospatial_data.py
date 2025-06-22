@@ -28,8 +28,36 @@ def main():
         "atlanta":"Atlanta-Sandy Springs-Roswell, GA",
         "philly":"Philadelphia-Camden-Wilmington, PA-NJ-DE-MD",
         "phoenix":"Phoenix-Mesa-Chandler, AZ",
+        "boston":"Boston-Cambridge-Newton, MA-NH",
+        "san francisco":"San Francisco-Oakland-Fremont, CA",
+        "san jose":"San Jose-Sunnyvale-Santa Clara, CA",
+        "detroit":"Detroit-Warren-Dearborn, MI",
         "seattle":"Seattle-Tacoma-Bellevue, WA",
-        "milwaukee":"Milwaukee-Waukesha, WI"
+        "minneapolis":"Minneapolis-St. Paul-Bloomington, MN-WI",
+        "tampa":"Tampa-St. Petersburg-Clearwater, FL",
+        "san diego":"San Diego-Chula Vista-Carlsbad, CA",
+        "denver":"Denver-Aurora-Centennial, CO",
+        "orlando":"Orlando-Kissimmee-Sanford, FL",
+        "charlotte":"Charlotte-Concord-Gastonia, NC-SC",
+        "baltimore":"Baltimore-Columbia-Towson, MD",
+        "st louis":"St. Louis, MO-IL",
+        "san antonio":"San Antonio-New Braunfels, TX",
+        "austin":"Austin-Round Rock-San Marcos, TX",
+        "portland":"Portland-Vancouver-Hillsboro, OR-WA",
+        "sacramento":"Sacramento-Roseville-Folsom, CA",
+        "las vegas":"Las Vegas-Henderson-North Las Vegas, NV",
+        "cincinnati":"Cincinnati, OH-KY-IN",
+        "kansas city":"Kansas City, MO-KS",
+        "columbus":"Columbus, OH",
+        "indy":"Indianapolis-Carmel-Greenwood, IN",
+        "nashville":"Nashville-Davidson--Murfreesboro--Franklin, TN",
+        "virginia beach":"Virginia Beach-Chesapeake-Norfolk, VA-NC",
+        "providence":"Providence-Warwick, RI-MA",
+        "milwaukee":"Milwaukee-Waukesha, WI",
+        "raleigh":"Raleigh-Cary, NC",
+        "louisville":"Louisville/Jefferson County, KY-IN",
+        "richmond":"Richmond, VA",
+        "fresno":"Fresno, CA"
     }
     cbsa_mhi_data = {
         "nyc":97_334,
@@ -42,8 +70,36 @@ def main():
         "atlanta":86_338,
         "philly":89_273,
         "phoenix":84_703,
+        "boston":110_697,
+        "san francisco":127792,
+        "san jose":153202,
+        "detroit":72574,
         "seattle":112_594,
-        "milwaukee":76_404
+        "minneapolis":95102,
+        "tampa":72743,
+        "san diego":103674,
+        "denver":103055,
+        "orlando":77378,
+        "charlotte":81262,
+        "baltimore":94289,
+        "st louis":78224,
+        "san antonio":73195,
+        "austin":98508,
+        "portland":94925,
+        "sacramento":94992,
+        "las vegas":75065,
+        "cincinnati":77844,
+        "kansas city":79842,
+        "columbus":77390,
+        "indy":77947,
+        "nashville":84685,
+        "virginia beach":79325,
+        "providence":83330,
+        "milwaukee":76_404,
+        "raleigh":96096,
+        "louisville":68921,
+        "richmond":84332,
+        "fresno":71140
     }
 
     tract_data = gpd.read_file(os.path.join(DATA_PATH, "tracts", "msa_tracts.geojson"))
@@ -51,7 +107,18 @@ def main():
 
     all_data = []
     for cbsa in cbsa_map.keys():
-        cbsa_title_simple = cbsa_map[cbsa][:cbsa_map[cbsa].index("-")]
+        try:
+            cbsa_title_simple = cbsa_map[cbsa][:cbsa_map[cbsa].index("-")]
+        except ValueError:
+            cbsa_title_simple = cbsa.capitalize()
+        if cbsa == "st louis":
+            cbsa_title_simple = "St. Louis"
+        elif cbsa == "cincinnati":
+            cbsa_title_simple = "Cincinnati"
+        elif cbsa == "kansas city":
+            cbsa_title_simple = "Kansas City"
+        elif cbsa == "louisville":
+            cbsa_title_simple = "Louisville"
         # get population totals for MSA
         cbsa_population = tract_data[tract_data["CBSA_title"] == cbsa_map[cbsa]]["population"].sum()
         cbsa_population_white = tract_data[tract_data["CBSA_title"] == cbsa_map[cbsa]]["population_white"].sum()
@@ -201,6 +268,19 @@ def main():
     )
     gdf.to_file(
         os.path.join(os.path.dirname(os.path.dirname(__file__)),"data","full_cbsa_data.geojson")
+    )
+    gdf.drop("geometry",axis=1,inplace=True)
+    gdf.to_csv(
+        os.path.join(os.path.dirname(os.path.dirname(__file__)),"data","data_no_geoms.csv"),
+        index=False
+    )
+    gdf.fillna("",inplace=True)
+    # TODO: future versions may want more than just the below data included in map
+    # but since this json is copy/pasted into the .html, want it to be as short as possible
+    html_cols_used = ["layer_name","club_name","pool_name","cbsa_name","population_pct"]
+    pd.DataFrame(gdf)[html_cols_used].to_json(
+        os.path.join(os.path.dirname(os.path.dirname(__file__)),"data","data_no_geoms.json"),
+        orient="records"
     )
 
 main()

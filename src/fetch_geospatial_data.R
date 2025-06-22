@@ -33,24 +33,18 @@ cbsas <- c(
   "Atlanta-Sandy Springs-Roswell, GA",
   "Philadelphia-Camden-Wilmington, PA-NJ-DE-MD",
   "Phoenix-Mesa-Chandler, AZ",
-  ## FUTURE ME: DELETE SEATTLE AND MILWAUKEE FROM THE LIST HERE HEHE
-  "Seattle-Tacoma-Bellevue, WA",
-  "Milwaukee-Waukesha, WI",
-  ## BUT LEAVE THEM LATER ON.. just having them jump the line
   "Boston-Cambridge-Newton, MA-NH",
   "San Francisco-Oakland-Fremont, CA",
   "San Jose-Sunnyvale-Santa Clara, CA",
   "Detroit-Warren-Dearborn, MI",
-  "Ann Arbor, MI",
   "Seattle-Tacoma-Bellevue, WA",
   "Minneapolis-St. Paul-Bloomington, MN-WI",
   "Tampa-St. Petersburg-Clearwater, FL",
-  "North Port-Bradenton-Sarasota, FL",
   "San Diego-Chula Vista-Carlsbad, CA",
   "Denver-Aurora-Centennial, CO",
-  "Boulder, CO",
   "Orlando-Kissimmee-Sanford, FL",
   "Charlotte-Concord-Gastonia, NC-SC",
+  "Baltimore-Columbia-Towson, MD",
   "St. Louis, MO-IL",
   "San Antonio-New Braunfels, TX",
   "Austin-Round Rock-San Marcos, TX",
@@ -70,7 +64,6 @@ cbsas <- c(
   "Richmond, VA",
   "Fresno, CA"
 )
-cbsas <- head(cbsas, 12)
 msa_county_map <- msa_county_map %>% filter(CBSA_title %in% cbsas)
 # national census tract dataset that I downloaded manually since tigris hates me :(
 all_ct <- sf::read_sf("/Users/andrewmurp/Downloads/cb_2023_us_tract_500k/cb_2023_us_tract_500k.shp")

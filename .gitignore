@@ -174,3 +174,5 @@ cython_debug/
 *.DS_Store
 .DS_Store
 *.Rhistory
+/data/*.geojson
+/data/data_no_geoms*

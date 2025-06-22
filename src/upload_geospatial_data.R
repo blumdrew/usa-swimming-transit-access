@@ -6,7 +6,7 @@ dot_env_data <- fromJSON(paste(readLines(api_key_path), collapse=""))
 df <- st_read("/Users/andrewmurp/Documents/python/usa-swimming-transit-access/data/full_cbsa_data.geojson")
 #df <- st_read("/Users/andrewmurp/Documents/python/usa-swimming-transit/data/usa_swimming_top_clubs_msa.geojson")
 
-ver = "v4" # change incrementally
+ver = "v7" # change incrementally
 
 secret_token = dot_env_data$mapbox_sk
 public_token = dot_env_data$mapbox_pk
