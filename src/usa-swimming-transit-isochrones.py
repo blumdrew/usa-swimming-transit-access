@@ -14,9 +14,10 @@ import logging
 import numpy as np
 import geopandas as gpd
 
+# see https://github.com/blumdrew/transit-isochrones
 sys.path.append("/Users/andrewmurp/Documents/python/transit-isochrones/src")
 from isochrone import Isochrone
-"""TODO:
+"""
 get data for the 50 largest MSAs in the US, must have at least 2 different clubs in the USA Swimming thing
 New York | DONE
 Los Angeles | DONE
@@ -66,6 +67,8 @@ def main():
     base_data = gpd.read_file(
         os.path.join(base_path, "data", "usa_swimming_top_clubs_msa.geojson")
     )
+    # change one by one. GTFS data needs to sit in the correct spot, and the MSA level
+    # is a good unit of analysis for transit
     msa_file_name = "fresno"
     msa_starts_with = "Fresno"
     os.makedirs(os.path.join(base_path, "data", msa_file_name), exist_ok=True)
