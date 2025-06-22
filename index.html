@@ -1,1 +1,651 @@
-Lorem ipsum
+<!DOCTYPE html>
+<!-- https://docs.mapbox.com/mapbox-gl-js/example/updating-choropleth/ -->
+<html>
+
+<head>
+    <meta name="viewport" content="user-scalable = yes">
+    <title>USA Swimming Transit Access</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+</head>
+
+
+<body style="background-color:#d3d3d3;">
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+    @media (max-width: 768px) {
+        .map-title {
+            font-size: 8px !important;
+        }
+        .drop-down-menu {
+            font-size: 10px !important;
+        }
+        .legend-text {
+            font-size: 8px !important;
+        }
+    }
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    #map {
+        position: absolute;
+        top: 175px;
+        bottom: 75px;
+        width: 100%;
+    }
+
+    h3 {
+        font-size: 16px;
+        font-family: 'Roboto';
+    }
+
+    h2 {
+        font-size: 18px;
+        font-family: 'Roboto';
+    }
+    h4 {
+        font-size: 14px;
+        font-family: 'Roboto';
+    }
+    h5 {
+        font-size: 10px;
+        font-family: 'Roboto';
+    }
+
+    .map-title {
+        font-family: 'Roboto';
+        position: relative;
+        top: 0px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .legend {
+        font-family: 'Roboto';
+        position: relative;
+        text-align: center;
+        font-size: 12px;
+    }
+    .legend-text {
+        font-family: 'Roboto';
+        float: left;
+    }
+
+    .legend-dot{
+        float: left;
+        height: 10px;
+        width: 10px;
+        margin-bottom: 5px;
+        background-color: #223b53;
+        border: 1px solid white;
+        clear: both;
+        border-radius: 50%;
+    }
+    .c1 {
+        background-color: #d4af37;
+    }
+
+    .c2 {
+        background-color: #c1c9c2;
+    }
+
+    .c3 {
+        background-color: #ad4d00;
+    }
+    .ic {
+        background-color: #ffffff;
+        border: 1px solid red;
+    }
+
+    .drop-down-menu{
+        font-family: 'Roboto';
+        font-size: 12px;
+        width: 100px;
+    }
+
+    .column {
+        float: left;
+        width: 50%;
+        box-sizing: border-box;
+        padding: 5px;
+    }
+    /* Clear floats after the columns */
+    .row:after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+
+    .map-footer {
+        font-family: "Roboto";
+        position: absolute;
+        bottom: 0px;
+        height: 75px;
+        width: 100%;
+    }
+
+    .bar-chart-title {
+        font-family: 'Roboto';
+        position: absolute;
+        bottom: 50px;
+        float: left;
+    }
+
+    </style>
+    <!-- Load the `mapbox-gl-geocoder` plugin. -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">
+    <div id="map-title" class="map-title"><h1>USA Swimming Transit Access</h1></div><hr>
+    <div id="legend" class="legend">
+        <div id="selector-container" class="column">
+            <div id="cbsa-selector-container">
+                <label for="cbsa-selector"><b>Select a metro area:</b></label>
+                <select name="cbsa-selector" id="cbsa-selector" class="drop-down-menu">
+                    <option value="New York">New York</option>
+                    <option value="Los Angeles">Los Angeles</option>
+                    <option value="Chicago">Chicago</option>
+                    <option value="Dallas">Dallas</option>
+                    <option value="Houston">Houston</option>
+                    <option value="Miami">Miami</option>
+                    <option value="Washington">Washington DC</option>
+                    <option value="Atlanta">Atlanta</option>
+                    <option value="Philadelphia">Philadelphia</option>
+                    <option value="Phoenix">Phoenix</option>
+                    <option value="Boston">Boston</option>
+                    <option value="San Francisco">San Francisco</option>
+                    <option value="San Jose">San Jose</option>
+                    <option value="Detroit">Detroit</option>
+                    <option value="Seattle">Seattle</option>
+                    <option value="Minneapolis">Minneapolis</option>
+                    <option value="Tampa">Tampa</option>
+                    <option value="San Diego">San Diego</option>
+                    <option value="Denver">Denver</option>
+                    <option value="Orlando">Orlando</option>
+                    <option value="Charlotte">Charlotte</option>
+                    <option value="Baltimore">Baltimore</option>
+                    <option value="St. Louis">St. Louis</option>
+                    <option value="San Antonio">San Antonio</option>
+                    <option value="Austin">Austin</option>
+                    <option value="Portland">Portland</option>
+                    <option value="Milwaukee">Milwaukee</option>
+                </select>
+            </div>
+            <div id="data-selector-container">
+                <label for="data-selector"><b>Display data for:</b></label>
+                <select name="data-selector" id="data-selector" class="drop-down-menu">
+                    <option value="cbsa">Metro Area</option>
+                    <option value="club">Clubs</option>
+                    <option value="pool">Pools</option>
+                </select>
+            </div>
+            <div id="pool-club-filter-container">
+                <label for="filter-selector"><b>Filter by pool/club:</b></label>
+                <select name="data-filter" id="data-filter" class="drop-down-menu">
+                </select>
+            </div>
+            <div id="data-filter-value" style="display: none">cbsa</div>
+            <div id="fly-to-metro-button-container">
+                <button id="fly-to-metro-button" class="legend-text" style="float: none;">Fly to Selected Metro</button>
+            </div>
+        </div>
+        <div id="legend-text" class="column">
+            <div style="font-weight: bold;">Legend<hr></div>
+            <div id="medal-box" class="column">
+                <div id="legend-gold-medal" class="legend-dot c1"></div><div class="legend-text">Gold Medal Clubs</div>
+                <div id="legend-silver-medal" class="legend-dot c2"></div><div class="legend-text">Silver Medal Clubs</div>
+                <div id="legend-broze-medal" class="legend-dot c3"></div><div class="legend-text">Bronze Medal Clubs</div>
+            </div>
+            <div id="legend-box" class="column">
+                <div id="legend-ic" class ="legend-dot ic"></div><div class="legend-text">Area Reachable on Transit in 60 minutes</div>
+            </div>
+        </div>
+    </div>
+    <div id="map"></div>
+    <div id="map-footer-data-details" class="map-footer">
+        <div id="map-footer-c1" class="column" style="overflow-y: auto; font-size: 10px;">
+            <div id="data-details-header"><h5>Data Selection Details</h5><hr><i>Metro Area</i></div>
+            <div id="data-details-body">
+                <ol>
+                    <li>test</li>
+                    <li>test</li>
+                    <li style="color: #ad4d00;"><i>test</i></li>
+                </ol>
+            </div>
+        </div>
+        <div id="map-footer-c1" class="column" style="overflow-y: auto; font-size: 10px;">
+            <div id="data-details-national-header"><h5>National Rankings</h5><hr><i>Metro Area</i></div>
+            <div id="data-details-national-body">
+                <ol>
+                    <li>test</li>
+                    <li>test</li>
+                    <li style="color: #ad4d00;"><i>test</i></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoiYmx1bWRyZXciLCJhIjoiY203bnZqcmc1MDU3czJtcHVtOWtuejg3cyJ9.BtyyyhiVLkUXZJP06fW7Aw';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: [-74, 40.7],
+        minZoom: 5,
+        zoom: 8,
+        attributionControl: false
+    });
+    var cbsa_value = document.getElementById("cbsa-selector").value
+    var data_selector_value = document.getElementById("data-selector").value
+    console.log(cbsa_value)
+    console.log(data_selector_value)
+    map.on('load',() => {
+        // Make pointer default
+        map.getCanvas().style.cursor = 'default';
+
+        // add tilesets
+        map.addSource('isochrones', {
+            'type': 'vector',
+            'url': 'mapbox://blumdrew.usa_swim_full_v7' // change as needed
+        });
+        map.addSource('pools', {
+            'type': 'vector',
+            'url': 'mapbox://blumdrew.usa_swim_pools_v1' // change as needed
+        });
+        map.addLayer({
+                'id': 'pool-isochrones',
+                'source': 'isochrones',
+                'source-layer': 'cbsa_pools',
+                'type': 'line',
+                'filter': ["all",
+                    ['==', 'cbsa_name', 'New York'],
+                    ['==', 'layer_name', 'cbsa']
+                ],
+                layout: {
+                    visibility: 'visible'
+                },
+                paint: {
+                    'line-color': [
+                        'interpolate',
+                        ['linear'],
+                        ['get', 'population_pct'],
+                        0, "#FFFFFF",
+                        5, "#fecc5c",
+                        15, "#fd8d3c",
+                        25, "#f03b20",
+                        50, "#51087e"
+                    ],
+                }
+            },
+            'continent-label' // Add layer below labels
+        );
+        map.addLayer({
+                'id': 'pool-isochrones-fill',
+                'source': 'isochrones',
+                'source-layer': 'cbsa_pools',
+                'type': 'fill',
+                'filter': ["all",
+                    ['==', 'cbsa_name', 'New York'],
+                    ['==', 'layer_name', 'cbsa']
+                ],
+                layout: {
+                    visibility: 'visible'
+                },
+                paint: {
+                    'fill-color':"#ffffff",
+                    'fill-opacity':0.1
+                }
+            },
+            'continent-label' // Add layer below labels
+        );
+
+        map.addLayer({
+                'id': 'pool-locations',
+                'source': 'pools',
+                'source-layer': 'pools',
+                'type': 'circle',
+                'filter': ['in', "New York", ['string', ['get', "NAME"]]],
+                layout: {
+                    visibility: 'visible'
+                },
+                paint: {
+                    'circle-color': [
+                        'match',
+                        ['get', 'level'],
+                        'Gold','#d4af37',
+                        'Silver','#c1c9c2',
+                        'Bronze','#ad4d00',
+                        /* other */ '#ccc'
+                    ]
+                }
+            },
+            'continent-label' // Add layer below labels
+        );
+
+        map.on('click', 'pool-locations', (e) => {
+            // Copy coordinates array.
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            var pool_name = e.features[0].properties.pool_name;
+            var club_name = e.features[0].properties.club_name;
+
+            const popupHTML = `
+            <div>Club: ${club_name} <button id="club-btn-filter" class="btn btn-success btn-simple text-white">Filter</button></div>
+            <div>Pool: ${pool_name} <button id="pool-btn-filter" class="btn btn-success btn-simple text-white">Filter</button></div>
+            `;
+
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            if (['mercator', 'equirectangular'].includes(map.getProjection().name)) {
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+            }
+
+            new mapboxgl.Popup()
+                .setLngLat(coordinates)
+                .setHTML(popupHTML)
+                .addTo(map);
+            
+            var club_button = document.getElementById("club-btn-filter");
+            var pool_button = document.getElementById("pool-btn-filter");
+            var cbsa = document.getElementById('cbsa-selector').value;
+            // determine what pools are available
+            var features_filter = map.querySourceFeatures(
+                "isochrones",
+                {
+                    sourceLayer: 'cbsa_pools',
+                    filter: ['==','cbsa_name',cbsa]
+                }
+            );
+            var properties_filter = features_filter.map(features_filter => features_filter.properties);
+            club_button.addEventListener("click", () => {
+                document.getElementById('data-selector').value = 'club';
+                map.setFilter('pool-isochrones',["all",['==', 'cbsa_name', cbsa],['==', 'layer_name', 'club'],["==","club_name",club_name]]);
+                map.setFilter('pool-isochrones-fill',["all",['==', 'cbsa_name', cbsa],['==', 'layer_name', 'club'],["==","club_name",club_name]]);
+                map.setFilter('pool-locations',["==","club_name",club_name]);
+                // set the data filter to the right item
+                // these have to be created, since we can filter from having a different layer filtered
+                var filter_options = properties_filter.map(properties_filter => properties_filter.club_name);
+                filter_options = [...new Set(filter_options)];
+                filter_options = filter_options.filter(n=>n!=undefined).sort();
+                var filter_options_html = filter_options.map((filter_options, index) => `<option value=${index+1}>${filter_options}</option>`);
+                if (document.getElementById("data-filter-value").innerHTML != "club"){
+                    document.getElementById("data-filter").innerHTML = "<option value=0>(all)</option>" + filter_options_html;
+                    document.getElementById("data-filter-value").innerHTML = 'club';
+                }
+                document.getElementById('data-filter').value = filter_options.indexOf(club_name) + 1 // 
+            });
+            pool_button.addEventListener("click", () => {
+                document.getElementById('data-selector').value = 'pool';
+                map.setFilter('pool-isochrones',["all",['==', 'cbsa_name', cbsa],['==', 'layer_name', 'club'],["==","pool_name",pool_name]]);
+                map.setFilter('pool-isochrones-fill',["all",['==', 'cbsa_name', cbsa],['==', 'layer_name', 'club'],["==","pool_name",pool_name]]);
+                map.setFilter('pool-locations',["==","pool_name",pool_name]);
+                // set the data filter to the right item
+                // these have to be created, since we can filter from having a different layer filtered
+                var filter_options = properties_filter.map(properties_filter => properties_filter.pool_name);
+                filter_options = [...new Set(filter_options)];
+                filter_options = filter_options.filter(n=>n!=undefined).sort();
+                var filter_options_html = filter_options.map((filter_options, index) => `<option value=${index+1}>${filter_options}</option>`);
+                if (document.getElementById("data-filter-value").innerHTML != "pool"){
+                    document.getElementById("data-filter").innerHTML = "<option value=0>(all)</option>" + filter_options_html;
+                    document.getElementById("data-filter-value").innerHTML = 'pool';
+                }
+                document.getElementById('data-filter').value = filter_options.indexOf(pool_name) + 1 // 
+            });
+        });
+
+        // Change the cursor to a pointer when the mouse is over the places layer.
+        map.on('mouseenter', 'pool-locations', () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+        // Change it back to a pointer when it leaves.
+        map.on('mouseleave', 'pool-locations', () => {
+            map.getCanvas().style.cursor = '';
+        });
+    }); // end load wait
+
+    var prior_cbsa_value = undefined;
+    map.on("idle", () =>{
+        //// UPDATE MAP FILTERS
+        var cbsa_value = document.getElementById("cbsa-selector").value;
+        var data_selector_value = document.getElementById("data-selector").value;
+        map.setFilter('pool-isochrones',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value]]);
+        map.setFilter('pool-isochrones-fill',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value]]);
+        map.setFilter('pool-locations',['in', cbsa_value, ['string', ['get', 'NAME']]]);
+        
+        // determine what pools are available
+        var features = map.querySourceFeatures(
+            "isochrones",
+            {
+                sourceLayer: 'cbsa_pools',
+                filter: ['==','cbsa_name',cbsa_value]
+            }
+        );
+        var properties = features.map(features => features.properties);
+        if (data_selector_value == "pool") {
+            // create the list of pools that are filterable based on the queried data
+            var filter_options = properties.map(properties => properties.pool_name);
+            filter_options = [...new Set(filter_options)];
+            filter_options = filter_options.filter(n=>n!=undefined).sort();
+            var filter_options_html = filter_options.map((filter_options, index) => `<option value=${index+1}>${filter_options}</option>`);
+            if (
+                (document.getElementById("data-filter-value").innerHTML != "pool")
+                || (document.getElementById('data-filter').innerHTML == '<option value="0">(all)</option>')
+                || (prior_cbsa_value != cbsa_value)
+            ){
+                document.getElementById("data-filter").innerHTML = "<option value=0>(all)</option>" + filter_options_html;
+                document.getElementById("data-filter-value").innerHTML = data_selector_value;
+            }
+        } else if (data_selector_value == "club"){
+            // create the list of clubs that are filterable based on the queried data
+            var filter_options = properties.map(properties => properties.club_name);
+            filter_options = [...new Set(filter_options)];
+            filter_options = filter_options.filter(n=>n!=undefined).sort();
+            var filter_options_html = filter_options.map((filter_options, index) => `<option value=${index+1}>${filter_options}</option>`);
+            if (
+                (document.getElementById("data-filter-value").innerHTML != "club")
+                || (document.getElementById('data-filter').innerHTML == '<option value="0">(all)</option>')
+                || (prior_cbsa_value != cbsa_value)
+            ){
+                document.getElementById("data-filter").innerHTML = "<option value=0>(all)</option>" + filter_options_html;
+                document.getElementById("data-filter-value").innerHTML = data_selector_value;
+            }
+        } else {
+            var filter_options = [];
+            var filter_options_html = '';
+            if (document.getElementById("data-filter").innerHTML != data_selector_value){
+                document.getElementById("data-filter").innerHTML = filter_options_html;
+                document.getElementById("data-filter-value").innerHTML = data_selector_value;
+            }
+        }
+        // set club/pool specific filters
+        if (data_selector_value != "cbsa"){
+            var data_filter = document.querySelector("#data-filter");
+            var filter_value = data_filter.options[data_filter.selectedIndex].innerHTML
+            if ((data_selector_value == "pool") & (filter_value != '(all)')){
+                map.setFilter('pool-isochrones',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value],["==","pool_name",filter_value]]);
+                map.setFilter('pool-isochrones-fill',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value],["==","pool_name",filter_value]]);
+                map.setFilter('pool-locations',['==','pool_name',filter_value]);
+                // set html for text in legend showing the demographics of the selected area
+            } else if ((data_selector_value == "club") & (filter_value != '(all)')){
+                map.setFilter('pool-isochrones',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value],["==","club_name",filter_value]]);
+                map.setFilter('pool-isochrones-fill',["all",['==', 'cbsa_name', cbsa_value],['==', 'layer_name', data_selector_value],["==","club_name",filter_value]]);
+                map.setFilter('pool-locations',["==","club_name",filter_value]);
+            } 
+        }
+
+        // FOOTER HTML
+        var detail_level_title;
+        // see excel sheet for these calculations (easier to hardcode I fear)
+        var cbsa_data = [
+            {name:"San Jose",val:"85.04%"},
+            {name:"Las Vegas",val:"65.12%"},
+            {name:"Denver",val:"54.41%"},
+            {name:"Fresno",val:"51.52%"},
+            {name:"Washington",val:"51.35%"},
+            {name:"Seattle",val:"50.95%"},
+            {name:"Phoenix",val:"44.17%"},
+            {name:"Chicago",val:"37.75%"},
+            {name:"Milwaukee",val:"33.59%"},
+            {name:"Raleigh",val:"33.55%"},
+            {name:"Baltimore",val:"33.35%"},
+            {name:"Philadelphia",val:"33.23%"},
+            {name:"New York",val:"32.82%"},
+            {name:"Austin",val:"32.42%"},
+            {name:"San Antonio",val:"31.58%"},
+            {name:"Sacramento",val:"29.33%"},
+            {name:"Boston",val:"29.06%"},
+            {name:"Los Angeles",val:"27.51%"},
+            {name:"Portland",val:"27.05%"},
+            {name:"Minneapolis",val:"27.03%"},
+            {name:"Indianapolis",val:"26.90%"},
+            {name:"Atlanta",val:"22.17%"},
+            {name:"San Diego",val:"21.32%"},
+            {name:"San Francisco",val:"20.61%"},
+            {name:"Houston",val:"20.09%"},
+            {name:"Miami",val:"18.80%"},
+            {name:"Detroit",val:"17.12%"},
+            {name:"Nashville",val:"12.58%"},
+            {name:"Dallas",val:"11.07%"},
+            {name:"Richmond",val:"8.00%"},
+            {name:"Charlotte",val:"5.01%"},
+            {name:"Kansas City",val:"3.90%"},
+            {name:"Cincinnati",val:"3.37%"},
+            {name:"Orlando",val:"2.18%"},
+            {name:"Louisville",val:"1.92%"},
+            {name:"Columbus",val:"1.26%"},
+            {name:"St. Louis",val:"0.28%"},
+            {name:"Tampa",val:"0.03%"}
+        ]
+        if (data_selector_value == 'cbsa') {
+            var detail_level_title = '<h5>Data Selection Details</h5><hr><i>Metro Areas, Share of Population with transit accessible pool</i>'
+            var national_detail_level_title = `<h5>National Rankings</h5><hr><i>Metro Areas, Share of Population with transit accessible pool</i>`
+            // list of cbsa need to be sorted by transit access
+            // found it easier to hard code this, since map.querySourceFeatures
+            const current_cbsa = cbsa_value;
+            var data_details_list_html = cbsa_data.map(function(c){
+                if(c.name==current_cbsa){return `<li style='color: #ff2c2c'><i>${c.name}, ${c.val}</i></li>`}
+                else{return `<li>${c.name}, ${c.val}</li>`}
+            })
+            document.getElementById("data-details-body").innerHTML = `<ol>${data_details_list_html.join("")}</ol>`
+            document.getElementById("data-details-national-body").innerHTML = `<ol>${data_details_list_html.join("")}</ol>`
+        } else {
+            if (data_selector_value == 'club'){
+                var detail_level_title = `<h5>Data Selection Details</h5><hr><i>Clubs in ${cbsa_value}, Share of Population with transit access to club</i>`;
+                var current_filter = filter_value;
+                var layer_name = 'club';
+            } else{
+                var detail_level_title = `<h5>Data Selection Details</h5><hr><i>Pools in ${cbsa_value}, Share of Population with transit access to pool</i>`;
+                var current_filter = filter_value;
+                var layer_name = 'pool';
+            }
+            var data_features = map.querySourceFeatures(
+                "isochrones",
+                {
+                    sourceLayer: 'cbsa_pools',
+                    filter: ['all',['==','cbsa_name',cbsa_value],['==','layer_name',layer_name]]
+                }
+            );
+            var data_properties = data_features.map(data_features => data_features.properties);
+            var data_details;
+            if (layer_name == 'club'){
+                var national_detail_level_title = `<h5>National Rankings</h5><hr><i>Clubs, Share of Population with transit access to club (Metro Area)</i>`
+                data_details = data_properties.map(data_properties => [data_properties.club_name,data_properties.population_pct]);
+            } else {
+                var national_detail_level_title = `<h5>National Rankings</h5><hr><i>Pools, Share of Population with transit access to pool (Metro Area)</i>`
+                data_details = data_properties.map(data_properties => [data_properties.pool_name,data_properties.population_pct]);
+            }
+            data_details = data_details.sort(function (a, b){return b[1] - a[1];}); // why does js sort numeric as string by default
+            var data_details_list_html = data_details.map(function(c){
+                if(c[0]==current_filter){return `<li style='color: #ff2c2c'><i>${c[0]}, ${c[1]}%</i></li>`}
+                else{return `<li>${c[0]}, ${c[1].toFixed(2)}%</li>`}
+            })
+            data_details_list_html = [...new Set(data_details_list_html)];
+            document.getElementById("data-details-body").innerHTML = `<ol>${data_details_list_html.join("")}</ol>`
+            // national stats require information not supplied by mapbox, since
+            // only features that fit onto the screen are returned in querySourceFeatures
+            // luckily, I know where the full data is :)
+            // yes I did copy/paste it because I am bad at js
+            full_data = [{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"New York","population_pct":33.59},{"layer_name":"club","club_name":"Badger SC","pool_name":"","cbsa_name":"New York","population_pct":18.0},{"layer_name":"club","club_name":"FSPY","pool_name":"","cbsa_name":"New York","population_pct":0.09},{"layer_name":"club","club_name":"Greater Somerset","pool_name":"","cbsa_name":"New York","population_pct":1.09},{"layer_name":"club","club_name":"Jersey Flyers","pool_name":"","cbsa_name":"New York","population_pct":10.59},{"layer_name":"club","club_name":"Lakeland Hills YMCA","pool_name":"","cbsa_name":"New York","population_pct":1.56},{"layer_name":"club","club_name":"Long Island Aquatic Club","pool_name":"","cbsa_name":"New York","population_pct":1.81},{"layer_name":"club","club_name":"Scarlet Aquatics","pool_name":"","cbsa_name":"New York","population_pct":0.03},{"layer_name":"club","club_name":"Team Suffolk","pool_name":"","cbsa_name":"New York","population_pct":3.18},{"layer_name":"pool","club_name":"Badger SC","pool_name":"Badger SC I","cbsa_name":"New York","population_pct":17.42},{"layer_name":"pool","club_name":"Badger SC","pool_name":"Badger SC II","cbsa_name":"New York","population_pct":0.6},{"layer_name":"pool","club_name":"FSPY","pool_name":"FSPY","cbsa_name":"New York","population_pct":0.09},{"layer_name":"pool","club_name":"Greater Somerset","pool_name":"Greater Somerset I","cbsa_name":"New York","population_pct":0.0},{"layer_name":"pool","club_name":"Greater Somerset","pool_name":"Greater Somerset II","cbsa_name":"New York","population_pct":0.03},{"layer_name":"pool","club_name":"Greater Somerset","pool_name":"Greater Somerset III","cbsa_name":"New York","population_pct":0.01},{"layer_name":"pool","club_name":"Greater Somerset","pool_name":"Greater Somerset IV","cbsa_name":"New York","population_pct":1.08},{"layer_name":"pool","club_name":"Jersey Flyers","pool_name":"Jersey Flyers I","cbsa_name":"New York","population_pct":0.19},{"layer_name":"pool","club_name":"Jersey Flyers","pool_name":"Jersey Flyers II","cbsa_name":"New York","population_pct":5.57},{"layer_name":"pool","club_name":"Jersey Flyers","pool_name":"Jersey Flyers III","cbsa_name":"New York","population_pct":8.91},{"layer_name":"pool","club_name":"Lakeland Hills YMCA","pool_name":"Lakeland Hills YMCA I","cbsa_name":"New York","population_pct":0.86},{"layer_name":"pool","club_name":"Lakeland Hills YMCA","pool_name":"Lakeland Hills YMCA II","cbsa_name":"New York","population_pct":1.32},{"layer_name":"pool","club_name":"Lakeland Hills YMCA","pool_name":"Lakeland Hills YMCA III","cbsa_name":"New York","population_pct":0.02},{"layer_name":"pool","club_name":"Lakeland Hills YMCA","pool_name":"Lakeland Hills YMCA IV","cbsa_name":"New York","population_pct":0.79},{"layer_name":"pool","club_name":"Lakeland Hills YMCA","pool_name":"Lakeland Hills YMCA V","cbsa_name":"New York","population_pct":0.08},{"layer_name":"pool","club_name":"Long Island Aquatic Club","pool_name":"Long Island Aquatic Club","cbsa_name":"New York","population_pct":1.81},{"layer_name":"pool","club_name":"Scarlet Aquatics","pool_name":"Scarlet Aquatics","cbsa_name":"New York","population_pct":0.03},{"layer_name":"pool","club_name":"Team Suffolk","pool_name":"Team Suffolk I","cbsa_name":"New York","population_pct":0.01},{"layer_name":"pool","club_name":"Team Suffolk","pool_name":"Team Suffolk II","cbsa_name":"New York","population_pct":2.59},{"layer_name":"pool","club_name":"Team Suffolk","pool_name":"Team Suffolk III","cbsa_name":"New York","population_pct":0.8},{"layer_name":"pool","club_name":"Team Suffolk","pool_name":"Team Suffolk IV","cbsa_name":"New York","population_pct":1.12},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Los Angeles","population_pct":27.91},{"layer_name":"club","club_name":"Fullerton Area","pool_name":"","cbsa_name":"Los Angeles","population_pct":12.72},{"layer_name":"club","club_name":"Gators SC","pool_name":"","cbsa_name":"Los Angeles","population_pct":3.67},{"layer_name":"club","club_name":"Irvine NOVA","pool_name":"","cbsa_name":"Los Angeles","population_pct":5.47},{"layer_name":"club","club_name":"La Mirada Armada","pool_name":"","cbsa_name":"Los Angeles","population_pct":5.04},{"layer_name":"club","club_name":"Mission Viejo","pool_name":"","cbsa_name":"Los Angeles","population_pct":3.02},{"layer_name":"club","club_name":"Paseo","pool_name":"","cbsa_name":"Los Angeles","population_pct":0.17},{"layer_name":"club","club_name":"Rose Bowl Aquatics","pool_name":"","cbsa_name":"Los Angeles","population_pct":5.46},{"layer_name":"club","club_name":"SOCAL","pool_name":"","cbsa_name":"Los Angeles","population_pct":14.46},{"layer_name":"pool","club_name":"Fullerton Area","pool_name":"Fullerton Area I","cbsa_name":"Los Angeles","population_pct":12.36},{"layer_name":"pool","club_name":"Fullerton Area","pool_name":"Fullerton Area II","cbsa_name":"Los Angeles","population_pct":9.07},{"layer_name":"pool","club_name":"Gators SC","pool_name":"Gators SC I","cbsa_name":"Los Angeles","population_pct":0.14},{"layer_name":"pool","club_name":"Gators SC","pool_name":"Gators SC II","cbsa_name":"Los Angeles","population_pct":2.38},{"layer_name":"pool","club_name":"Gators SC","pool_name":"Gators SC III","cbsa_name":"Los Angeles","population_pct":1.73},{"layer_name":"pool","club_name":"Irvine NOVA","pool_name":"Irvine NOVA","cbsa_name":"Los Angeles","population_pct":5.47},{"layer_name":"pool","club_name":"La Mirada Armada","pool_name":"La Mirada Armada I","cbsa_name":"Los Angeles","population_pct":2.36},{"layer_name":"pool","club_name":"La Mirada Armada","pool_name":"La Mirada Armada II","cbsa_name":"Los Angeles","population_pct":2.68},{"layer_name":"pool","club_name":"Mission Viejo","pool_name":"Mission Viejo","cbsa_name":"Los Angeles","population_pct":3.02},{"layer_name":"pool","club_name":"Paseo","pool_name":"Paseo I","cbsa_name":"Los Angeles","population_pct":0.01},{"layer_name":"pool","club_name":"Paseo","pool_name":"Paseo II","cbsa_name":"Los Angeles","population_pct":0.05},{"layer_name":"pool","club_name":"Paseo","pool_name":"Paseo III","cbsa_name":"Los Angeles","population_pct":0.06},{"layer_name":"pool","club_name":"Paseo","pool_name":"Paseo IV","cbsa_name":"Los Angeles","population_pct":0.04},{"layer_name":"pool","club_name":"Paseo","pool_name":"Paseo V","cbsa_name":"Los Angeles","population_pct":0.04},{"layer_name":"pool","club_name":"Rose Bowl Aquatics","pool_name":"Rose Bowl Aquatics","cbsa_name":"Los Angeles","population_pct":5.46},{"layer_name":"pool","club_name":"SOCAL","pool_name":"SOCAL I","cbsa_name":"Los Angeles","population_pct":7.38},{"layer_name":"pool","club_name":"SOCAL","pool_name":"SOCAL II","cbsa_name":"Los Angeles","population_pct":9.25},{"layer_name":"pool","club_name":"SOCAL","pool_name":"SOCAL III","cbsa_name":"Los Angeles","population_pct":7.85},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Chicago","population_pct":38.8},{"layer_name":"club","club_name":"Academy Bullets","pool_name":"","cbsa_name":"Chicago","population_pct":7.45},{"layer_name":"club","club_name":"Barrington Swim Club","pool_name":"","cbsa_name":"Chicago","population_pct":0.0},{"layer_name":"club","club_name":"Chicago Wolfpack","pool_name":"","cbsa_name":"Chicago","population_pct":26.19},{"layer_name":"club","club_name":"FMC Aquatics","pool_name":"","cbsa_name":"Chicago","population_pct":1.96},{"layer_name":"club","club_name":"Glenbrook Swim Club","pool_name":"","cbsa_name":"Chicago","population_pct":4.22},{"layer_name":"club","club_name":"Hinsdale SC","pool_name":"","cbsa_name":"Chicago","population_pct":1.68},{"layer_name":"club","club_name":"NASA Wildcats","pool_name":"","cbsa_name":"Chicago","population_pct":9.77},{"layer_name":"club","club_name":"Patriot Aquatics","pool_name":"","cbsa_name":"Chicago","population_pct":1.42},{"layer_name":"club","club_name":"Riptide","pool_name":"","cbsa_name":"Chicago","population_pct":1.48},{"layer_name":"club","club_name":"St Charles Swimming","pool_name":"","cbsa_name":"Chicago","population_pct":0.03},{"layer_name":"pool","club_name":"Academy Bullets","pool_name":"Academy Bullets I","cbsa_name":"Chicago","population_pct":1.41},{"layer_name":"pool","club_name":"Academy Bullets","pool_name":"Academy Bullets II","cbsa_name":"Chicago","population_pct":0.01},{"layer_name":"pool","club_name":"Academy Bullets","pool_name":"Academy Bullets III","cbsa_name":"Chicago","population_pct":5.94},{"layer_name":"pool","club_name":"Academy Bullets","pool_name":"Academy Bullets IV","cbsa_name":"Chicago","population_pct":0.09},{"layer_name":"pool","club_name":"Barrington Swim Club","pool_name":"Barrington Swim Club","cbsa_name":"Chicago","population_pct":0.0},{"layer_name":"pool","club_name":"Chicago Wolfpack","pool_name":"Chicago Wolfpack","cbsa_name":"Chicago","population_pct":10.76},{"layer_name":"pool","club_name":"Chicago Wolfpack","pool_name":"Chicago Wolfpack I","cbsa_name":"Chicago","population_pct":22.32},{"layer_name":"pool","club_name":"FMC Aquatics","pool_name":"FMC Aquatics","cbsa_name":"Chicago","population_pct":1.96},{"layer_name":"pool","club_name":"Glenbrook Swim Club","pool_name":"Glenbrook Swim Club","cbsa_name":"Chicago","population_pct":4.22},{"layer_name":"pool","club_name":"Hinsdale SC","pool_name":"Hinsdale SC I","cbsa_name":"Chicago","population_pct":0.18},{"layer_name":"pool","club_name":"Hinsdale SC","pool_name":"Hinsdale SC II","cbsa_name":"Chicago","population_pct":0.08},{"layer_name":"pool","club_name":"Hinsdale SC","pool_name":"Hinsdale SC III","cbsa_name":"Chicago","population_pct":1.56},{"layer_name":"pool","club_name":"Hinsdale SC","pool_name":"Hinsdale SC IV","cbsa_name":"Chicago","population_pct":0.07},{"layer_name":"pool","club_name":"NASA Wildcats","pool_name":"NASA Wildcats","cbsa_name":"Chicago","population_pct":9.77},{"layer_name":"pool","club_name":"Patriot Aquatics","pool_name":"Patriot Aquatics","cbsa_name":"Chicago","population_pct":1.42},{"layer_name":"pool","club_name":"Riptide","pool_name":"Riptide I","cbsa_name":"Chicago","population_pct":0.25},{"layer_name":"pool","club_name":"Riptide","pool_name":"Riptide II","cbsa_name":"Chicago","population_pct":1.48},{"layer_name":"pool","club_name":"St Charles Swimming","pool_name":"St Charles Swimming","cbsa_name":"Chicago","population_pct":0.03},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Dallas","population_pct":10.83},{"layer_name":"club","club_name":"COR","pool_name":"","cbsa_name":"Dallas","population_pct":10.2},{"layer_name":"club","club_name":"Lakeside","pool_name":"","cbsa_name":"Dallas","population_pct":0.28},{"layer_name":"club","club_name":"Mansfield Aquatics","pool_name":"","cbsa_name":"Dallas","population_pct":0.05},{"layer_name":"club","club_name":"Metroplex","pool_name":"","cbsa_name":"Dallas","population_pct":7.81},{"layer_name":"club","club_name":"Metropplex","pool_name":"","cbsa_name":"Dallas","population_pct":0.04},{"layer_name":"club","club_name":"North Texas Nadadores","pool_name":"","cbsa_name":"Dallas","population_pct":0.04},{"layer_name":"club","club_name":"Texas Ford","pool_name":"","cbsa_name":"Dallas","population_pct":0.06},{"layer_name":"pool","club_name":"COR","pool_name":"COR I","cbsa_name":"Dallas","population_pct":8.56},{"layer_name":"pool","club_name":"COR","pool_name":"COR II","cbsa_name":"Dallas","population_pct":7.61},{"layer_name":"pool","club_name":"COR","pool_name":"COR III","cbsa_name":"Dallas","population_pct":8.09},{"layer_name":"pool","club_name":"Lakeside","pool_name":"Lakeside I","cbsa_name":"Dallas","population_pct":0.14},{"layer_name":"pool","club_name":"Lakeside","pool_name":"Lakeside II","cbsa_name":"Dallas","population_pct":0.16},{"layer_name":"pool","club_name":"Lakeside","pool_name":"Lakeside III","cbsa_name":"Dallas","population_pct":0.05},{"layer_name":"pool","club_name":"Lakeside","pool_name":"Lakeside IV","cbsa_name":"Dallas","population_pct":0.0},{"layer_name":"pool","club_name":"Lakeside","pool_name":"Lakeside V","cbsa_name":"Dallas","population_pct":0.06},{"layer_name":"pool","club_name":"Mansfield Aquatics","pool_name":"Mansfield Aquatics","cbsa_name":"Dallas","population_pct":0.05},{"layer_name":"pool","club_name":"Metroplex","pool_name":"Metroplex I","cbsa_name":"Dallas","population_pct":0.05},{"layer_name":"pool","club_name":"Metroplex","pool_name":"Metroplex II","cbsa_name":"Dallas","population_pct":0.02},{"layer_name":"pool","club_name":"Metroplex","pool_name":"Metroplex IV","cbsa_name":"Dallas","population_pct":7.65},{"layer_name":"pool","club_name":"Metroplex","pool_name":"Metroplex V","cbsa_name":"Dallas","population_pct":0.09},{"layer_name":"pool","club_name":"Metropplex","pool_name":"Metropplex III","cbsa_name":"Dallas","population_pct":0.04},{"layer_name":"pool","club_name":"North Texas Nadadores","pool_name":"North Texas Nadadores","cbsa_name":"Dallas","population_pct":0.04},{"layer_name":"pool","club_name":"Texas Ford","pool_name":"Texas Ford","cbsa_name":"Dallas","population_pct":0.06},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Houston","population_pct":19.67},{"layer_name":"club","club_name":"Blue Tide","pool_name":"","cbsa_name":"Houston","population_pct":9.52},{"layer_name":"club","club_name":"Dad's Club","pool_name":"","cbsa_name":"Houston","population_pct":9.39},{"layer_name":"club","club_name":"First Colony","pool_name":"","cbsa_name":"Houston","population_pct":0.89},{"layer_name":"club","club_name":"Fleet","pool_name":"","cbsa_name":"Houston","population_pct":0.06},{"layer_name":"club","club_name":"Magnolia Aquatic Club","pool_name":"","cbsa_name":"Houston","population_pct":0.0},{"layer_name":"club","club_name":"Rice","pool_name":"","cbsa_name":"Houston","population_pct":14.24},{"layer_name":"club","club_name":"SSAN","pool_name":"","cbsa_name":"Houston","population_pct":11.24},{"layer_name":"pool","club_name":"Blue Tide","pool_name":"Blue Tide I","cbsa_name":"Houston","population_pct":0.1},{"layer_name":"pool","club_name":"Blue Tide","pool_name":"Blue Tide II","cbsa_name":"Houston","population_pct":0.13},{"layer_name":"pool","club_name":"Blue Tide","pool_name":"Blue Tide III","cbsa_name":"Houston","population_pct":0.03},{"layer_name":"pool","club_name":"Blue Tide","pool_name":"Blue Tide IV","cbsa_name":"Houston","population_pct":9.39},{"layer_name":"pool","club_name":"Dad's Club","pool_name":"Dad's Club","cbsa_name":"Houston","population_pct":9.39},{"layer_name":"pool","club_name":"First Colony","pool_name":"First Colony I","cbsa_name":"Houston","population_pct":0.18},{"layer_name":"pool","club_name":"First Colony","pool_name":"First Colony II","cbsa_name":"Houston","population_pct":0.23},{"layer_name":"pool","club_name":"First Colony","pool_name":"First Colony III","cbsa_name":"Houston","population_pct":0.3},{"layer_name":"pool","club_name":"First Colony","pool_name":"First Colony IV","cbsa_name":"Houston","population_pct":0.2},{"layer_name":"pool","club_name":"First Colony","pool_name":"First Colony V","cbsa_name":"Houston","population_pct":0.13},{"layer_name":"pool","club_name":"First Colony","pool_name":"First Colony VI","cbsa_name":"Houston","population_pct":0.03},{"layer_name":"pool","club_name":"First Colony","pool_name":"First Colony VII","cbsa_name":"Houston","population_pct":0.62},{"layer_name":"pool","club_name":"First Colony","pool_name":"First Colony VIII","cbsa_name":"Houston","population_pct":0.07},{"layer_name":"pool","club_name":"Fleet","pool_name":"Fleet","cbsa_name":"Houston","population_pct":0.06},{"layer_name":"pool","club_name":"Magnolia Aquatic Club","pool_name":"Magnolia Aquatic Club","cbsa_name":"Houston","population_pct":0.0},{"layer_name":"pool","club_name":"Rice","pool_name":"Rice","cbsa_name":"Houston","population_pct":14.24},{"layer_name":"pool","club_name":"SSAN","pool_name":"SSAN I","cbsa_name":"Houston","population_pct":0.05},{"layer_name":"pool","club_name":"SSAN","pool_name":"SSAN II","cbsa_name":"Houston","population_pct":0.05},{"layer_name":"pool","club_name":"SSAN","pool_name":"SSAN III","cbsa_name":"Houston","population_pct":0.14},{"layer_name":"pool","club_name":"SSAN","pool_name":"SSAN IV","cbsa_name":"Houston","population_pct":0.05},{"layer_name":"pool","club_name":"SSAN","pool_name":"SSAN V","cbsa_name":"Houston","population_pct":0.08},{"layer_name":"pool","club_name":"SSAN","pool_name":"SSAN VI","cbsa_name":"Houston","population_pct":11.09},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Miami","population_pct":18.79},{"layer_name":"club","club_name":"Eagle Aquatics","pool_name":"","cbsa_name":"Miami","population_pct":10.37},{"layer_name":"club","club_name":"Flood Aquatics","pool_name":"","cbsa_name":"Miami","population_pct":0.03},{"layer_name":"club","club_name":"Pine Crest","pool_name":"","cbsa_name":"Miami","population_pct":8.4},{"layer_name":"pool","club_name":"Eagle Aquatics","pool_name":"Eagle Aquatics","cbsa_name":"Miami","population_pct":10.37},{"layer_name":"pool","club_name":"Flood Aquatics","pool_name":"Flood Aquatics","cbsa_name":"Miami","population_pct":0.03},{"layer_name":"pool","club_name":"Pine Crest","pool_name":"Pine Crest I","cbsa_name":"Miami","population_pct":8.32},{"layer_name":"pool","club_name":"Pine Crest","pool_name":"Pine Crest II","cbsa_name":"Miami","population_pct":0.08},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Washington","population_pct":52.34},{"layer_name":"club","club_name":"Arlington Aquatic Club","pool_name":"","cbsa_name":"Washington","population_pct":37.0},{"layer_name":"club","club_name":"Machine Aquatics","pool_name":"","cbsa_name":"Washington","population_pct":41.03},{"layer_name":"club","club_name":"NCAP","pool_name":"","cbsa_name":"Washington","population_pct":42.07},{"layer_name":"club","club_name":"RMSC","pool_name":"","cbsa_name":"Washington","population_pct":28.53},{"layer_name":"pool","club_name":"Arlington Aquatic Club","pool_name":"Arlington Aquatic Club I","cbsa_name":"Washington","population_pct":17.44},{"layer_name":"pool","club_name":"Arlington Aquatic Club","pool_name":"Arlington Aquatic Club II","cbsa_name":"Washington","population_pct":30.46},{"layer_name":"pool","club_name":"Arlington Aquatic Club","pool_name":"Arlington Aquatic Club III","cbsa_name":"Washington","population_pct":32.99},{"layer_name":"pool","club_name":"Machine Aquatics","pool_name":"Machine Aquatics I","cbsa_name":"Washington","population_pct":12.41},{"layer_name":"pool","club_name":"Machine Aquatics","pool_name":"Machine Aquatics II","cbsa_name":"Washington","population_pct":0.05},{"layer_name":"pool","club_name":"Machine Aquatics","pool_name":"Machine Aquatics III","cbsa_name":"Washington","population_pct":0.11},{"layer_name":"pool","club_name":"Machine Aquatics","pool_name":"Machine Aquatics IV","cbsa_name":"Washington","population_pct":0.19},{"layer_name":"pool","club_name":"Machine Aquatics","pool_name":"Machine Aquatics IX","cbsa_name":"Washington","population_pct":25.7},{"layer_name":"pool","club_name":"Machine Aquatics","pool_name":"Machine Aquatics V","cbsa_name":"Washington","population_pct":0.05},{"layer_name":"pool","club_name":"Machine Aquatics","pool_name":"Machine Aquatics VI","cbsa_name":"Washington","population_pct":0.14},{"layer_name":"pool","club_name":"Machine Aquatics","pool_name":"Machine Aquatics VII","cbsa_name":"Washington","population_pct":10.23},{"layer_name":"pool","club_name":"Machine Aquatics","pool_name":"Machine Aquatics VIII","cbsa_name":"Washington","population_pct":11.56},{"layer_name":"pool","club_name":"Machine Aquatics","pool_name":"Machine Aquatics X","cbsa_name":"Washington","population_pct":18.61},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP I","cbsa_name":"Washington","population_pct":23.29},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP II","cbsa_name":"Washington","population_pct":1.3},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP III","cbsa_name":"Washington","population_pct":0.05},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP IV","cbsa_name":"Washington","population_pct":11.98},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP IX","cbsa_name":"Washington","population_pct":14.93},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP V","cbsa_name":"Washington","population_pct":15.6},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP VI","cbsa_name":"Washington","population_pct":0.11},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP VII","cbsa_name":"Washington","population_pct":0.05},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP VIII","cbsa_name":"Washington","population_pct":24.87},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP XI","cbsa_name":"Washington","population_pct":0.01},{"layer_name":"pool","club_name":"NCAP","pool_name":"NCAP XII","cbsa_name":"Washington","population_pct":0.01},{"layer_name":"pool","club_name":"RMSC","pool_name":"RMSC I","cbsa_name":"Washington","population_pct":4.13},{"layer_name":"pool","club_name":"RMSC","pool_name":"RMSC II","cbsa_name":"Washington","population_pct":24.22},{"layer_name":"pool","club_name":"RMSC","pool_name":"RMSC III","cbsa_name":"Washington","population_pct":15.18},{"layer_name":"pool","club_name":"RMSC","pool_name":"RMSC IV","cbsa_name":"Washington","population_pct":15.61},{"layer_name":"pool","club_name":"RMSC","pool_name":"RMSC V","cbsa_name":"Washington","population_pct":17.04},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Atlanta","population_pct":21.86},{"layer_name":"club","club_name":"Chattahoochee Gold","pool_name":"","cbsa_name":"Atlanta","population_pct":0.09},{"layer_name":"club","club_name":"Dynamo","pool_name":"","cbsa_name":"Atlanta","population_pct":15.73},{"layer_name":"club","club_name":"Gwinnett Aquatics","pool_name":"","cbsa_name":"Atlanta","population_pct":0.02},{"layer_name":"club","club_name":"Spartan Aquatics Atlanta","pool_name":"","cbsa_name":"Atlanta","population_pct":3.91},{"layer_name":"club","club_name":"SwimAtlanta","pool_name":"","cbsa_name":"Atlanta","population_pct":13.55},{"layer_name":"club","club_name":"SwimAtlanta Sugarloaf","pool_name":"","cbsa_name":"Atlanta","population_pct":1.99},{"layer_name":"pool","club_name":"Chattahoochee Gold","pool_name":"Chattahoochee Gold I","cbsa_name":"Atlanta","population_pct":0.04},{"layer_name":"pool","club_name":"Chattahoochee Gold","pool_name":"Chattahoochee Gold II","cbsa_name":"Atlanta","population_pct":0.04},{"layer_name":"pool","club_name":"Chattahoochee Gold","pool_name":"Chattahoochee Gold III","cbsa_name":"Atlanta","population_pct":0.01},{"layer_name":"pool","club_name":"Dynamo","pool_name":"Dynamo I","cbsa_name":"Atlanta","population_pct":0.11},{"layer_name":"pool","club_name":"Dynamo","pool_name":"Dynamo II","cbsa_name":"Atlanta","population_pct":9.66},{"layer_name":"pool","club_name":"Dynamo","pool_name":"Dynamo III","cbsa_name":"Atlanta","population_pct":13.43},{"layer_name":"pool","club_name":"Gwinnett Aquatics","pool_name":"Gwinnett Aquatics","cbsa_name":"Atlanta","population_pct":0.02},{"layer_name":"pool","club_name":"Spartan Aquatics Atlanta","pool_name":"Spartan Aquatics Atlanta","cbsa_name":"Atlanta","population_pct":3.91},{"layer_name":"pool","club_name":"SwimAtlanta","pool_name":"SwimAtlanta I","cbsa_name":"Atlanta","population_pct":11.48},{"layer_name":"pool","club_name":"SwimAtlanta","pool_name":"SwimAtlanta II","cbsa_name":"Atlanta","population_pct":0.05},{"layer_name":"pool","club_name":"SwimAtlanta","pool_name":"SwimAtlanta III","cbsa_name":"Atlanta","population_pct":0.05},{"layer_name":"pool","club_name":"SwimAtlanta","pool_name":"SwimAtlanta IV","cbsa_name":"Atlanta","population_pct":0.03},{"layer_name":"pool","club_name":"SwimAtlanta","pool_name":"SwimAtlanta V","cbsa_name":"Atlanta","population_pct":4.12},{"layer_name":"pool","club_name":"SwimAtlanta Sugarloaf","pool_name":"SwimAtlanta Sugarloaf","cbsa_name":"Atlanta","population_pct":1.99},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Philadelphia","population_pct":33.25},{"layer_name":"club","club_name":"Germantown Academy","pool_name":"","cbsa_name":"Philadelphia","population_pct":19.11},{"layer_name":"club","club_name":"Jersey Wahoos","pool_name":"","cbsa_name":"Philadelphia","population_pct":0.03},{"layer_name":"club","club_name":"PWAC","pool_name":"","cbsa_name":"Philadelphia","population_pct":16.2},{"layer_name":"club","club_name":"Phoenixville","pool_name":"","cbsa_name":"Philadelphia","population_pct":19.52},{"layer_name":"club","club_name":"Suburban Seahawks","pool_name":"","cbsa_name":"Philadelphia","population_pct":11.37},{"layer_name":"club","club_name":"Upper Main Line Y","pool_name":"","cbsa_name":"Philadelphia","population_pct":6.13},{"layer_name":"club","club_name":"Western YMCA Wahoos","pool_name":"","cbsa_name":"Philadelphia","population_pct":3.04},{"layer_name":"pool","club_name":"Germantown Academy","pool_name":"Germantown Academy","cbsa_name":"Philadelphia","population_pct":19.11},{"layer_name":"pool","club_name":"Jersey Wahoos","pool_name":"Jersey Wahoos","cbsa_name":"Philadelphia","population_pct":0.03},{"layer_name":"pool","club_name":"PWAC","pool_name":"PWAC I","cbsa_name":"Philadelphia","population_pct":13.99},{"layer_name":"pool","club_name":"PWAC","pool_name":"PWAC II","cbsa_name":"Philadelphia","population_pct":11.95},{"layer_name":"pool","club_name":"Phoenixville","pool_name":"Phoenixville","cbsa_name":"Philadelphia","population_pct":19.52},{"layer_name":"pool","club_name":"Suburban Seahawks","pool_name":"Suburban Seahawks","cbsa_name":"Philadelphia","population_pct":11.37},{"layer_name":"pool","club_name":"Upper Main Line Y","pool_name":"Upper Main Line Y","cbsa_name":"Philadelphia","population_pct":6.13},{"layer_name":"pool","club_name":"Western YMCA Wahoos","pool_name":"Western YMCA Wahoos","cbsa_name":"Philadelphia","population_pct":3.04},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Phoenix","population_pct":43.32},{"layer_name":"club","club_name":"Gold Medal SC","pool_name":"","cbsa_name":"Phoenix","population_pct":11.82},{"layer_name":"club","club_name":"Neptune","pool_name":"","cbsa_name":"Phoenix","population_pct":37.06},{"layer_name":"club","club_name":"Phoenix SC","pool_name":"","cbsa_name":"Phoenix","population_pct":15.64},{"layer_name":"club","club_name":"Scottsdale Aquatic Club","pool_name":"","cbsa_name":"Phoenix","population_pct":18.3},{"layer_name":"pool","club_name":"Gold Medal SC","pool_name":"Gold Medal SC","cbsa_name":"Phoenix","population_pct":11.82},{"layer_name":"pool","club_name":"Neptune","pool_name":"Neptune I","cbsa_name":"Phoenix","population_pct":0.08},{"layer_name":"pool","club_name":"Neptune","pool_name":"Neptune II","cbsa_name":"Phoenix","population_pct":14.96},{"layer_name":"pool","club_name":"Neptune","pool_name":"Neptune III","cbsa_name":"Phoenix","population_pct":15.57},{"layer_name":"pool","club_name":"Neptune","pool_name":"Neptune IV","cbsa_name":"Phoenix","population_pct":0.04},{"layer_name":"pool","club_name":"Neptune","pool_name":"Neptune V","cbsa_name":"Phoenix","population_pct":16.52},{"layer_name":"pool","club_name":"Neptune","pool_name":"Neptune VI","cbsa_name":"Phoenix","population_pct":8.35},{"layer_name":"pool","club_name":"Phoenix SC","pool_name":"Phoenix SC","cbsa_name":"Phoenix","population_pct":15.64},{"layer_name":"pool","club_name":"Scottsdale Aquatic Club","pool_name":"Scottsdale Aquatic Club I","cbsa_name":"Phoenix","population_pct":9.62},{"layer_name":"pool","club_name":"Scottsdale Aquatic Club","pool_name":"Scottsdale Aquatic Club II","cbsa_name":"Phoenix","population_pct":0.24},{"layer_name":"pool","club_name":"Scottsdale Aquatic Club","pool_name":"Scottsdale Aquatic Club III","cbsa_name":"Phoenix","population_pct":12.19},{"layer_name":"pool","club_name":"Scottsdale Aquatic Club","pool_name":"Scottsdale Aquatic Club IV","cbsa_name":"Phoenix","population_pct":13.15},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Boston","population_pct":29.2},{"layer_name":"club","club_name":"Commonwealth Current","pool_name":"","cbsa_name":"Boston","population_pct":25.02},{"layer_name":"club","club_name":"Gator SC MA","pool_name":"","cbsa_name":"Boston","population_pct":27.41},{"layer_name":"club","club_name":"Phoenix MA","pool_name":"","cbsa_name":"Boston","population_pct":0.42},{"layer_name":"club","club_name":"Solo","pool_name":"","cbsa_name":"Boston","population_pct":0.44},{"layer_name":"pool","club_name":"Commonwealth Current","pool_name":"Commonwealth Current","cbsa_name":"Boston","population_pct":25.02},{"layer_name":"pool","club_name":"Gator SC MA","pool_name":"Gator SC MA I","cbsa_name":"Boston","population_pct":11.95},{"layer_name":"pool","club_name":"Gator SC MA","pool_name":"Gator SC MA II","cbsa_name":"Boston","population_pct":0.03},{"layer_name":"pool","club_name":"Gator SC MA","pool_name":"Gator SC MA III","cbsa_name":"Boston","population_pct":26.01},{"layer_name":"pool","club_name":"Gator SC MA","pool_name":"Gator SC MA IV","cbsa_name":"Boston","population_pct":7.84},{"layer_name":"pool","club_name":"Phoenix MA","pool_name":"Phoenix MA I","cbsa_name":"Boston","population_pct":0.04},{"layer_name":"pool","club_name":"Phoenix MA","pool_name":"Phoenix MA II","cbsa_name":"Boston","population_pct":0.39},{"layer_name":"pool","club_name":"Solo","pool_name":"Solo I","cbsa_name":"Boston","population_pct":0.13},{"layer_name":"pool","club_name":"Solo","pool_name":"Solo II","cbsa_name":"Boston","population_pct":0.02},{"layer_name":"pool","club_name":"Solo","pool_name":"Solo III","cbsa_name":"Boston","population_pct":0.09},{"layer_name":"pool","club_name":"Solo","pool_name":"Solo IV","cbsa_name":"Boston","population_pct":0.13},{"layer_name":"pool","club_name":"Solo","pool_name":"Solo V","cbsa_name":"Boston","population_pct":0.07},{"layer_name":"pool","club_name":"Solo","pool_name":"Solo VI","cbsa_name":"Boston","population_pct":0.05},{"layer_name":"pool","club_name":"Solo","pool_name":"Solo VII","cbsa_name":"Boston","population_pct":0.09},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"San Francisco","population_pct":21.03},{"layer_name":"club","club_name":"Crow Canyon","pool_name":"","cbsa_name":"San Francisco","population_pct":5.11},{"layer_name":"club","club_name":"Livermore Aquacowboys","pool_name":"","cbsa_name":"San Francisco","population_pct":5.06},{"layer_name":"club","club_name":"North Bay","pool_name":"","cbsa_name":"San Francisco","population_pct":5.05},{"layer_name":"club","club_name":"Orinda Aquatics","pool_name":"","cbsa_name":"San Francisco","population_pct":7.15},{"layer_name":"club","club_name":"Walnut Creek Aquabears","pool_name":"","cbsa_name":"San Francisco","population_pct":9.82},{"layer_name":"pool","club_name":"Crow Canyon","pool_name":"Crow Canyon I","cbsa_name":"San Francisco","population_pct":5.11},{"layer_name":"pool","club_name":"Crow Canyon","pool_name":"Crow Canyon II","cbsa_name":"San Francisco","population_pct":0.16},{"layer_name":"pool","club_name":"Livermore Aquacowboys","pool_name":"Livermore Aquacowboys I","cbsa_name":"San Francisco","population_pct":4.15},{"layer_name":"pool","club_name":"Livermore Aquacowboys","pool_name":"Livermore Aquacowboys II","cbsa_name":"San Francisco","population_pct":5.06},{"layer_name":"pool","club_name":"North Bay","pool_name":"North Bay I","cbsa_name":"San Francisco","population_pct":5.05},{"layer_name":"pool","club_name":"North Bay","pool_name":"North Bay II","cbsa_name":"San Francisco","population_pct":3.09},{"layer_name":"pool","club_name":"North Bay","pool_name":"North Bay III","cbsa_name":"San Francisco","population_pct":2.27},{"layer_name":"pool","club_name":"Orinda Aquatics","pool_name":"Orinda Aquatics","cbsa_name":"San Francisco","population_pct":7.15},{"layer_name":"pool","club_name":"Walnut Creek Aquabears","pool_name":"Walnut Creek Aquabears","cbsa_name":"San Francisco","population_pct":9.82},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"San Jose","population_pct":86.38},{"layer_name":"club","club_name":"De Anza","pool_name":"","cbsa_name":"San Jose","population_pct":50.76},{"layer_name":"club","club_name":"Palo Alto Stanford Aquatics","pool_name":"","cbsa_name":"San Jose","population_pct":29.94},{"layer_name":"club","club_name":"Quicksilver","pool_name":"","cbsa_name":"San Jose","population_pct":57.71},{"layer_name":"club","club_name":"Santa Clara","pool_name":"","cbsa_name":"San Jose","population_pct":51.37},{"layer_name":"pool","club_name":"De Anza","pool_name":"De Anza I","cbsa_name":"San Jose","population_pct":45.16},{"layer_name":"pool","club_name":"De Anza","pool_name":"De Anza II","cbsa_name":"San Jose","population_pct":24.23},{"layer_name":"pool","club_name":"De Anza","pool_name":"De Anza III","cbsa_name":"San Jose","population_pct":35.92},{"layer_name":"pool","club_name":"Palo Alto Stanford Aquatics","pool_name":"Palo Alto Stanford Aquatics","cbsa_name":"San Jose","population_pct":29.94},{"layer_name":"pool","club_name":"Quicksilver","pool_name":"Quicksilver I","cbsa_name":"San Jose","population_pct":48.14},{"layer_name":"pool","club_name":"Quicksilver","pool_name":"Quicksilver II","cbsa_name":"San Jose","population_pct":30.73},{"layer_name":"pool","club_name":"Quicksilver","pool_name":"Quicksilver III","cbsa_name":"San Jose","population_pct":34.63},{"layer_name":"pool","club_name":"Quicksilver","pool_name":"Quicksilver IV","cbsa_name":"San Jose","population_pct":54.94},{"layer_name":"pool","club_name":"Quicksilver","pool_name":"Quicksilver V","cbsa_name":"San Jose","population_pct":52.71},{"layer_name":"pool","club_name":"Quicksilver","pool_name":"Quicksilver VI","cbsa_name":"San Jose","population_pct":0.21},{"layer_name":"pool","club_name":"Santa Clara","pool_name":"Santa Clara I","cbsa_name":"San Jose","population_pct":51.24},{"layer_name":"pool","club_name":"Santa Clara","pool_name":"Santa Clara II","cbsa_name":"San Jose","population_pct":47.19},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Detroit","population_pct":17.22},{"layer_name":"club","club_name":"Birmingham Blue Dolphins","pool_name":"","cbsa_name":"Detroit","population_pct":14.77},{"layer_name":"club","club_name":"OLY","pool_name":"","cbsa_name":"Detroit","population_pct":6.4},{"layer_name":"club","club_name":"USSC","pool_name":"","cbsa_name":"Detroit","population_pct":6.14},{"layer_name":"pool","club_name":"Birmingham Blue Dolphins","pool_name":"Birmingham Blue Dolphins","cbsa_name":"Detroit","population_pct":14.77},{"layer_name":"pool","club_name":"OLY","pool_name":"OLY","cbsa_name":"Detroit","population_pct":6.4},{"layer_name":"pool","club_name":"USSC","pool_name":"USSC I","cbsa_name":"Detroit","population_pct":0.28},{"layer_name":"pool","club_name":"USSC","pool_name":"USSC II","cbsa_name":"Detroit","population_pct":6.14},{"layer_name":"pool","club_name":"USSC","pool_name":"USSC III","cbsa_name":"Detroit","population_pct":0.46},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Seattle","population_pct":50.92},{"layer_name":"club","club_name":"Bellevue Club","pool_name":"","cbsa_name":"Seattle","population_pct":17.5},{"layer_name":"club","club_name":"King","pool_name":"","cbsa_name":"Seattle","population_pct":16.78},{"layer_name":"club","club_name":"SMAC","pool_name":"","cbsa_name":"Seattle","population_pct":45.61},{"layer_name":"pool","club_name":"Bellevue Club","pool_name":"Bellevue Club","cbsa_name":"Seattle","population_pct":17.5},{"layer_name":"pool","club_name":"King","pool_name":"King I","cbsa_name":"Seattle","population_pct":0.03},{"layer_name":"pool","club_name":"King","pool_name":"King II","cbsa_name":"Seattle","population_pct":6.4},{"layer_name":"pool","club_name":"King","pool_name":"King III","cbsa_name":"Seattle","population_pct":2.7},{"layer_name":"pool","club_name":"King","pool_name":"King IV","cbsa_name":"Seattle","population_pct":7.48},{"layer_name":"pool","club_name":"King","pool_name":"King V","cbsa_name":"Seattle","population_pct":8.33},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC I","cbsa_name":"Seattle","population_pct":27.37},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC II","cbsa_name":"Seattle","population_pct":9.89},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC III","cbsa_name":"Seattle","population_pct":14.5},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC IV","cbsa_name":"Seattle","population_pct":9.83},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC IX","cbsa_name":"Seattle","population_pct":0.27},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC V","cbsa_name":"Seattle","population_pct":0.09},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC VI","cbsa_name":"Seattle","population_pct":6.4},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC VII","cbsa_name":"Seattle","population_pct":12.89},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC VIII","cbsa_name":"Seattle","population_pct":0.53},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC X","cbsa_name":"Seattle","population_pct":9.97},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC XI","cbsa_name":"Seattle","population_pct":9.74},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC XII","cbsa_name":"Seattle","population_pct":7.6},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC XIII","cbsa_name":"Seattle","population_pct":0.34},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC XIV","cbsa_name":"Seattle","population_pct":8.11},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC XV","cbsa_name":"Seattle","population_pct":30.82},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC XVI","cbsa_name":"Seattle","population_pct":16.06},{"layer_name":"pool","club_name":"SMAC","pool_name":"SMAC XVII","cbsa_name":"Seattle","population_pct":17.55},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Minneapolis","population_pct":27.01},{"layer_name":"club","club_name":"Aquajets","pool_name":"","cbsa_name":"Minneapolis","population_pct":0.04},{"layer_name":"club","club_name":"Edina","pool_name":"","cbsa_name":"Minneapolis","population_pct":2.14},{"layer_name":"club","club_name":"Foxjets","pool_name":"","cbsa_name":"Minneapolis","population_pct":24.16},{"layer_name":"club","club_name":"Hurricanes","pool_name":"","cbsa_name":"Minneapolis","population_pct":14.59},{"layer_name":"club","club_name":"Riptide","pool_name":"","cbsa_name":"Minneapolis","population_pct":0.08},{"layer_name":"club","club_name":"STORM","pool_name":"","cbsa_name":"Minneapolis","population_pct":0.21},{"layer_name":"pool","club_name":"Aquajets","pool_name":"Aquajets","cbsa_name":"Minneapolis","population_pct":0.04},{"layer_name":"pool","club_name":"Edina","pool_name":"Edina","cbsa_name":"Minneapolis","population_pct":2.14},{"layer_name":"pool","club_name":"Foxjets","pool_name":"Foxjets I","cbsa_name":"Minneapolis","population_pct":0.12},{"layer_name":"pool","club_name":"Foxjets","pool_name":"Foxjets II","cbsa_name":"Minneapolis","population_pct":0.13},{"layer_name":"pool","club_name":"Foxjets","pool_name":"Foxjets III","cbsa_name":"Minneapolis","population_pct":0.18},{"layer_name":"pool","club_name":"Foxjets","pool_name":"Foxjets IV","cbsa_name":"Minneapolis","population_pct":17.14},{"layer_name":"pool","club_name":"Foxjets","pool_name":"Foxjets V","cbsa_name":"Minneapolis","population_pct":12.06},{"layer_name":"pool","club_name":"Hurricanes","pool_name":"Hurricanes I","cbsa_name":"Minneapolis","population_pct":13.77},{"layer_name":"pool","club_name":"Hurricanes","pool_name":"Hurricanes II","cbsa_name":"Minneapolis","population_pct":0.43},{"layer_name":"pool","club_name":"Hurricanes","pool_name":"Hurricanes III","cbsa_name":"Minneapolis","population_pct":9.1},{"layer_name":"pool","club_name":"Riptide","pool_name":"Riptide","cbsa_name":"Minneapolis","population_pct":0.08},{"layer_name":"pool","club_name":"STORM","pool_name":"STORM I","cbsa_name":"Minneapolis","population_pct":0.11},{"layer_name":"pool","club_name":"STORM","pool_name":"STORM II","cbsa_name":"Minneapolis","population_pct":0.05},{"layer_name":"pool","club_name":"STORM","pool_name":"STORM III","cbsa_name":"Minneapolis","population_pct":0.06},{"layer_name":"pool","club_name":"STORM","pool_name":"STORM IV","cbsa_name":"Minneapolis","population_pct":0.06},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Tampa","population_pct":0.03},{"layer_name":"club","club_name":"TBAC","pool_name":"","cbsa_name":"Tampa","population_pct":0.03},{"layer_name":"pool","club_name":"TBAC","pool_name":"TBAC","cbsa_name":"Tampa","population_pct":0.03},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"San Diego","population_pct":21.42},{"layer_name":"club","club_name":"Coronado Swim Team","pool_name":"","cbsa_name":"San Diego","population_pct":21.42},{"layer_name":"pool","club_name":"Coronado Swim Team","pool_name":"Coronado Swim Team I","cbsa_name":"San Diego","population_pct":10.57},{"layer_name":"pool","club_name":"Coronado Swim Team","pool_name":"Coronado Swim Team II","cbsa_name":"San Diego","population_pct":10.96},{"layer_name":"pool","club_name":"Coronado Swim Team","pool_name":"Coronado Swim Team III","cbsa_name":"San Diego","population_pct":6.16},{"layer_name":"pool","club_name":"Coronado Swim Team","pool_name":"Coronado Swim Team IV","cbsa_name":"San Diego","population_pct":14.38},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Denver","population_pct":54.16},{"layer_name":"club","club_name":"Denver Hilltopers","pool_name":"","cbsa_name":"Denver","population_pct":43.15},{"layer_name":"club","club_name":"Elevation Aquatics","pool_name":"","cbsa_name":"Denver","population_pct":10.02},{"layer_name":"club","club_name":"Foothills ST","pool_name":"","cbsa_name":"Denver","population_pct":21.86},{"layer_name":"club","club_name":"Highlands Ranch","pool_name":"","cbsa_name":"Denver","population_pct":49.24},{"layer_name":"pool","club_name":"Denver Hilltopers","pool_name":"Denver Hilltopers","cbsa_name":"Denver","population_pct":43.15},{"layer_name":"pool","club_name":"Elevation Aquatics","pool_name":"Elevation Aquatics","cbsa_name":"Denver","population_pct":10.02},{"layer_name":"pool","club_name":"Foothills ST","pool_name":"Foothills ST I","cbsa_name":"Denver","population_pct":21.51},{"layer_name":"pool","club_name":"Foothills ST","pool_name":"Foothills ST II","cbsa_name":"Denver","population_pct":2.37},{"layer_name":"pool","club_name":"Foothills ST","pool_name":"Foothills ST III","cbsa_name":"Denver","population_pct":13.81},{"layer_name":"pool","club_name":"Highlands Ranch","pool_name":"Highlands Ranch I","cbsa_name":"Denver","population_pct":16.37},{"layer_name":"pool","club_name":"Highlands Ranch","pool_name":"Highlands Ranch II","cbsa_name":"Denver","population_pct":16.76},{"layer_name":"pool","club_name":"Highlands Ranch","pool_name":"Highlands Ranch III","cbsa_name":"Denver","population_pct":14.46},{"layer_name":"pool","club_name":"Highlands Ranch","pool_name":"Highlands Ranch IV","cbsa_name":"Denver","population_pct":15.82},{"layer_name":"pool","club_name":"Highlands Ranch","pool_name":"Highlands Ranch IX","cbsa_name":"Denver","population_pct":15.83},{"layer_name":"pool","club_name":"Highlands Ranch","pool_name":"Highlands Ranch V","cbsa_name":"Denver","population_pct":34.05},{"layer_name":"pool","club_name":"Highlands Ranch","pool_name":"Highlands Ranch VI","cbsa_name":"Denver","population_pct":0.92},{"layer_name":"pool","club_name":"Highlands Ranch","pool_name":"Highlands Ranch VII","cbsa_name":"Denver","population_pct":21.51},{"layer_name":"pool","club_name":"Highlands Ranch","pool_name":"Highlands Ranch VIII","cbsa_name":"Denver","population_pct":19.3},{"layer_name":"pool","club_name":"Highlands Ranch","pool_name":"Highlands Ranch X","cbsa_name":"Denver","population_pct":27.93},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Orlando","population_pct":2.14},{"layer_name":"club","club_name":"Blue Dolfins","pool_name":"","cbsa_name":"Orlando","population_pct":0.12},{"layer_name":"club","club_name":"Highlander Orlando","pool_name":"","cbsa_name":"Orlando","population_pct":0.31},{"layer_name":"club","club_name":"Southwest Stars","pool_name":"","cbsa_name":"Orlando","population_pct":0.04},{"layer_name":"club","club_name":"Windmere Lakers","pool_name":"","cbsa_name":"Orlando","population_pct":1.68},{"layer_name":"pool","club_name":"Blue Dolfins","pool_name":"Blue Dolfins","cbsa_name":"Orlando","population_pct":0.12},{"layer_name":"pool","club_name":"Highlander Orlando","pool_name":"Highlander Orlando","cbsa_name":"Orlando","population_pct":0.31},{"layer_name":"pool","club_name":"Southwest Stars","pool_name":"Southwest Stars","cbsa_name":"Orlando","population_pct":0.04},{"layer_name":"pool","club_name":"Windmere Lakers","pool_name":"Windmere Lakers I","cbsa_name":"Orlando","population_pct":0.03},{"layer_name":"pool","club_name":"Windmere Lakers","pool_name":"Windmere Lakers II","cbsa_name":"Orlando","population_pct":1.65},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Charlotte","population_pct":4.91},{"layer_name":"club","club_name":"MSA","pool_name":"","cbsa_name":"Charlotte","population_pct":0.41},{"layer_name":"club","club_name":"SwimMAC Davidson","pool_name":"","cbsa_name":"Charlotte","population_pct":2.85},{"layer_name":"club","club_name":"SwimMAC Main","pool_name":"","cbsa_name":"Charlotte","population_pct":1.49},{"layer_name":"club","club_name":"SwimMAC North","pool_name":"","cbsa_name":"Charlotte","population_pct":2.93},{"layer_name":"pool","club_name":"MSA","pool_name":"MSA I","cbsa_name":"Charlotte","population_pct":0.11},{"layer_name":"pool","club_name":"MSA","pool_name":"MSA II","cbsa_name":"Charlotte","population_pct":0.14},{"layer_name":"pool","club_name":"MSA","pool_name":"MSA III","cbsa_name":"Charlotte","population_pct":0.13},{"layer_name":"pool","club_name":"MSA","pool_name":"MSA IV","cbsa_name":"Charlotte","population_pct":0.03},{"layer_name":"pool","club_name":"SwimMAC Davidson","pool_name":"SwimMAC Davidson","cbsa_name":"Charlotte","population_pct":2.85},{"layer_name":"pool","club_name":"SwimMAC Main","pool_name":"SwimMAC Main","cbsa_name":"Charlotte","population_pct":1.49},{"layer_name":"pool","club_name":"SwimMAC North","pool_name":"SwimMAC North","cbsa_name":"Charlotte","population_pct":2.93},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Baltimore","population_pct":33.41},{"layer_name":"club","club_name":"Eagle","pool_name":"","cbsa_name":"Baltimore","population_pct":13.95},{"layer_name":"club","club_name":"NAAC","pool_name":"","cbsa_name":"Baltimore","population_pct":0.07},{"layer_name":"club","club_name":"NBAC","pool_name":"","cbsa_name":"Baltimore","population_pct":32.08},{"layer_name":"pool","club_name":"Eagle","pool_name":"Eagle MD I","cbsa_name":"Baltimore","population_pct":13.95},{"layer_name":"pool","club_name":"NAAC","pool_name":"NAAC","cbsa_name":"Baltimore","population_pct":0.07},{"layer_name":"pool","club_name":"NBAC","pool_name":"NBAC I","cbsa_name":"Baltimore","population_pct":24.04},{"layer_name":"pool","club_name":"NBAC","pool_name":"NBAC II","cbsa_name":"Baltimore","population_pct":30.55},{"layer_name":"pool","club_name":"NBAC","pool_name":"NBAC III","cbsa_name":"Baltimore","population_pct":30.65},{"layer_name":"pool","club_name":"NBAC","pool_name":"NBAC IV","cbsa_name":"Baltimore","population_pct":1.2},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"St. Louis","population_pct":0.28},{"layer_name":"club","club_name":"Rockwood","pool_name":"","cbsa_name":"St. Louis","population_pct":0.28},{"layer_name":"pool","club_name":"Rockwood","pool_name":"Rockwood I","cbsa_name":"St. Louis","population_pct":0.12},{"layer_name":"pool","club_name":"Rockwood","pool_name":"Rockwood II","cbsa_name":"St. Louis","population_pct":0.07},{"layer_name":"pool","club_name":"Rockwood","pool_name":"Rockwood III","cbsa_name":"St. Louis","population_pct":0.01},{"layer_name":"pool","club_name":"Rockwood","pool_name":"Rockwood IV","cbsa_name":"St. Louis","population_pct":0.07},{"layer_name":"pool","club_name":"Rockwood","pool_name":"Rockwood V","cbsa_name":"St. Louis","population_pct":0.13},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"San Antonio","population_pct":30.92},{"layer_name":"club","club_name":"Alamo Area","pool_name":"","cbsa_name":"San Antonio","population_pct":29.16},{"layer_name":"club","club_name":"Streamline","pool_name":"","cbsa_name":"San Antonio","population_pct":30.7},{"layer_name":"pool","club_name":"Alamo Area","pool_name":"Alamo Area I","cbsa_name":"San Antonio","population_pct":28.36},{"layer_name":"pool","club_name":"Alamo Area","pool_name":"Alamo Area II","cbsa_name":"San Antonio","population_pct":25.07},{"layer_name":"pool","club_name":"Streamline","pool_name":"Streamline I","cbsa_name":"San Antonio","population_pct":28.36},{"layer_name":"pool","club_name":"Streamline","pool_name":"Streamline II","cbsa_name":"San Antonio","population_pct":23.0},{"layer_name":"pool","club_name":"Streamline","pool_name":"Streamline III","cbsa_name":"San Antonio","population_pct":14.35},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Austin","population_pct":31.4},{"layer_name":"club","club_name":"Longhorn Aquatics","pool_name":"","cbsa_name":"Austin","population_pct":24.35},{"layer_name":"club","club_name":"Nitro","pool_name":"","cbsa_name":"Austin","population_pct":0.08},{"layer_name":"club","club_name":"Waterloo","pool_name":"","cbsa_name":"Austin","population_pct":23.04},{"layer_name":"pool","club_name":"Longhorn Aquatics","pool_name":"Longhorn Aquatics","cbsa_name":"Austin","population_pct":24.35},{"layer_name":"pool","club_name":"Nitro","pool_name":"Nitro I","cbsa_name":"Austin","population_pct":0.02},{"layer_name":"pool","club_name":"Nitro","pool_name":"Nitro II","cbsa_name":"Austin","population_pct":0.02},{"layer_name":"pool","club_name":"Nitro","pool_name":"Nitro III","cbsa_name":"Austin","population_pct":0.04},{"layer_name":"pool","club_name":"Waterloo","pool_name":"Waterloo I","cbsa_name":"Austin","population_pct":3.87},{"layer_name":"pool","club_name":"Waterloo","pool_name":"Waterloo II","cbsa_name":"Austin","population_pct":5.49},{"layer_name":"pool","club_name":"Waterloo","pool_name":"Waterloo III","cbsa_name":"Austin","population_pct":16.75},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Portland","population_pct":27.08},{"layer_name":"club","club_name":"Lake Oswego","pool_name":"","cbsa_name":"Portland","population_pct":18.69},{"layer_name":"club","club_name":"Tualatin Hills","pool_name":"","cbsa_name":"Portland","population_pct":12.73},{"layer_name":"pool","club_name":"Lake Oswego","pool_name":"Lake Oswego I","cbsa_name":"Portland","population_pct":13.56},{"layer_name":"pool","club_name":"Lake Oswego","pool_name":"Lake Oswego II","cbsa_name":"Portland","population_pct":17.32},{"layer_name":"pool","club_name":"Tualatin Hills","pool_name":"Tualatin Hills","cbsa_name":"Portland","population_pct":12.73},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Sacramento","population_pct":29.21},{"layer_name":"club","club_name":"DART","pool_name":"","cbsa_name":"Sacramento","population_pct":6.95},{"layer_name":"club","club_name":"Sierra Marlins","pool_name":"","cbsa_name":"Sacramento","population_pct":7.1},{"layer_name":"club","club_name":"Wolverine Aquatics CA","pool_name":"","cbsa_name":"Sacramento","population_pct":17.83},{"layer_name":"pool","club_name":"DART","pool_name":"DART I","cbsa_name":"Sacramento","population_pct":6.59},{"layer_name":"pool","club_name":"DART","pool_name":"DART II","cbsa_name":"Sacramento","population_pct":4.02},{"layer_name":"pool","club_name":"DART","pool_name":"DART III","cbsa_name":"Sacramento","population_pct":3.81},{"layer_name":"pool","club_name":"DART","pool_name":"DART IV","cbsa_name":"Sacramento","population_pct":4.33},{"layer_name":"pool","club_name":"DART","pool_name":"DART V","cbsa_name":"Sacramento","population_pct":6.06},{"layer_name":"pool","club_name":"Sierra Marlins","pool_name":"Sierra Marlins","cbsa_name":"Sacramento","population_pct":7.1},{"layer_name":"pool","club_name":"Wolverine Aquatics CA","pool_name":"Wolverine Aquatics CA I","cbsa_name":"Sacramento","population_pct":0.06},{"layer_name":"pool","club_name":"Wolverine Aquatics CA","pool_name":"Wolverine Aquatics CA II","cbsa_name":"Sacramento","population_pct":17.76},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Las Vegas","population_pct":64.32},{"layer_name":"club","club_name":"Sandpipers","pool_name":"","cbsa_name":"Las Vegas","population_pct":53.43},{"layer_name":"club","club_name":"TRA","pool_name":"","cbsa_name":"Las Vegas","population_pct":29.66},{"layer_name":"pool","club_name":"Sandpipers","pool_name":"Sandpipers I","cbsa_name":"Las Vegas","population_pct":33.73},{"layer_name":"pool","club_name":"Sandpipers","pool_name":"Sandpipers II","cbsa_name":"Las Vegas","population_pct":0.73},{"layer_name":"pool","club_name":"Sandpipers","pool_name":"Sandpipers III","cbsa_name":"Las Vegas","population_pct":25.66},{"layer_name":"pool","club_name":"Sandpipers","pool_name":"Sandpipers IV","cbsa_name":"Las Vegas","population_pct":30.91},{"layer_name":"pool","club_name":"Sandpipers","pool_name":"Sandpipers V","cbsa_name":"Las Vegas","population_pct":22.47},{"layer_name":"pool","club_name":"Sandpipers","pool_name":"Sandpipers VI","cbsa_name":"Las Vegas","population_pct":40.64},{"layer_name":"pool","club_name":"TRA","pool_name":"TRA","cbsa_name":"Las Vegas","population_pct":29.66},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Cincinnati","population_pct":3.37},{"layer_name":"club","club_name":"ME Lyons-Anderson Barracuda","pool_name":"","cbsa_name":"Cincinnati","population_pct":3.24},{"layer_name":"club","club_name":"Mason Manta Rays","pool_name":"","cbsa_name":"Cincinnati","population_pct":0.13},{"layer_name":"pool","club_name":"ME Lyons-Anderson Barracuda","pool_name":"ME Lyons-Anderson Barracuda","cbsa_name":"Cincinnati","population_pct":3.24},{"layer_name":"pool","club_name":"Mason Manta Rays","pool_name":"Mason Manta Rays","cbsa_name":"Cincinnati","population_pct":0.13},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Kansas City","population_pct":3.88},{"layer_name":"club","club_name":"Empire KC","pool_name":"","cbsa_name":"Kansas City","population_pct":3.71},{"layer_name":"club","club_name":"Tsunami KC","pool_name":"","cbsa_name":"Kansas City","population_pct":0.17},{"layer_name":"pool","club_name":"Empire KC","pool_name":"Empire KC I","cbsa_name":"Kansas City","population_pct":0.49},{"layer_name":"pool","club_name":"Empire KC","pool_name":"Empire KC II","cbsa_name":"Kansas City","population_pct":0.27},{"layer_name":"pool","club_name":"Empire KC","pool_name":"Empire KC III","cbsa_name":"Kansas City","population_pct":0.19},{"layer_name":"pool","club_name":"Empire KC","pool_name":"Empire KC IV","cbsa_name":"Kansas City","population_pct":2.66},{"layer_name":"pool","club_name":"Empire KC","pool_name":"Empire KC V","cbsa_name":"Kansas City","population_pct":0.07},{"layer_name":"pool","club_name":"Empire KC","pool_name":"Empire KC VI","cbsa_name":"Kansas City","population_pct":0.06},{"layer_name":"pool","club_name":"Empire KC","pool_name":"Empire KC VII","cbsa_name":"Kansas City","population_pct":0.05},{"layer_name":"pool","club_name":"Empire KC","pool_name":"Empire KC VIII","cbsa_name":"Kansas City","population_pct":0.1},{"layer_name":"pool","club_name":"Tsunami KC","pool_name":"Tsunami KC I","cbsa_name":"Kansas City","population_pct":0.09},{"layer_name":"pool","club_name":"Tsunami KC","pool_name":"Tsunami KC II","cbsa_name":"Kansas City","population_pct":0.08},{"layer_name":"pool","club_name":"Tsunami KC","pool_name":"Tsunami KC III","cbsa_name":"Kansas City","population_pct":0.04},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Columbus","population_pct":1.26},{"layer_name":"club","club_name":"Dublin Sea Dragons","pool_name":"","cbsa_name":"Columbus","population_pct":0.16},{"layer_name":"club","club_name":"New Albany","pool_name":"","cbsa_name":"Columbus","population_pct":0.64},{"layer_name":"club","club_name":"Westerville Aquatic Club","pool_name":"","cbsa_name":"Columbus","population_pct":0.45},{"layer_name":"pool","club_name":"Dublin Sea Dragons","pool_name":"Dublin Sea Dragons","cbsa_name":"Columbus","population_pct":0.16},{"layer_name":"pool","club_name":"New Albany","pool_name":"New Albany","cbsa_name":"Columbus","population_pct":0.64},{"layer_name":"pool","club_name":"Westerville Aquatic Club","pool_name":"Westerville Aquatic Club I","cbsa_name":"Columbus","population_pct":0.44},{"layer_name":"pool","club_name":"Westerville Aquatic Club","pool_name":"Westerville Aquatic Club II","cbsa_name":"Columbus","population_pct":0.45},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Indianapolis","population_pct":26.97},{"layer_name":"club","club_name":"Carmel","pool_name":"","cbsa_name":"Indianapolis","population_pct":26.69},{"layer_name":"club","club_name":"Fishers","pool_name":"","cbsa_name":"Indianapolis","population_pct":0.09},{"layer_name":"club","club_name":"Indiana SC","pool_name":"","cbsa_name":"Indianapolis","population_pct":0.12},{"layer_name":"club","club_name":"Zionsville","pool_name":"","cbsa_name":"Indianapolis","population_pct":0.07},{"layer_name":"pool","club_name":"Carmel","pool_name":"Carmel I","cbsa_name":"Indianapolis","population_pct":0.21},{"layer_name":"pool","club_name":"Carmel","pool_name":"Carmel II","cbsa_name":"Indianapolis","population_pct":23.61},{"layer_name":"pool","club_name":"Carmel","pool_name":"Carmel III","cbsa_name":"Indianapolis","population_pct":0.08},{"layer_name":"pool","club_name":"Carmel","pool_name":"Carmel IV","cbsa_name":"Indianapolis","population_pct":0.17},{"layer_name":"pool","club_name":"Carmel","pool_name":"Carmel V","cbsa_name":"Indianapolis","population_pct":7.3},{"layer_name":"pool","club_name":"Carmel","pool_name":"Carmel VI","cbsa_name":"Indianapolis","population_pct":0.11},{"layer_name":"pool","club_name":"Fishers","pool_name":"Fishers","cbsa_name":"Indianapolis","population_pct":0.09},{"layer_name":"pool","club_name":"Indiana SC","pool_name":"Indiana SC III","cbsa_name":"Indianapolis","population_pct":0.12},{"layer_name":"pool","club_name":"Zionsville","pool_name":"Zionsville","cbsa_name":"Indianapolis","population_pct":0.07},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Nashville","population_pct":12.24},{"layer_name":"club","club_name":"Ensworth","pool_name":"","cbsa_name":"Nashville","population_pct":0.24},{"layer_name":"club","club_name":"NAC","pool_name":"","cbsa_name":"Nashville","population_pct":12.24},{"layer_name":"pool","club_name":"Ensworth","pool_name":"Ensworth","cbsa_name":"Nashville","population_pct":0.24},{"layer_name":"pool","club_name":"NAC","pool_name":"NAC I","cbsa_name":"Nashville","population_pct":12.24},{"layer_name":"pool","club_name":"NAC","pool_name":"NAC II","cbsa_name":"Nashville","population_pct":8.23},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Virginia Beach","population_pct":16.77},{"layer_name":"club","club_name":"CGBD","pool_name":"","cbsa_name":"Virginia Beach","population_pct":16.18},{"layer_name":"club","club_name":"Old Dominion","pool_name":"","cbsa_name":"Virginia Beach","population_pct":0.42},{"layer_name":"club","club_name":"Tide","pool_name":"","cbsa_name":"Virginia Beach","population_pct":0.26},{"layer_name":"pool","club_name":"CGBD","pool_name":"CGBD I","cbsa_name":"Virginia Beach","population_pct":10.87},{"layer_name":"pool","club_name":"CGBD","pool_name":"CGBD II","cbsa_name":"Virginia Beach","population_pct":7.71},{"layer_name":"pool","club_name":"CGBD","pool_name":"CGBD III","cbsa_name":"Virginia Beach","population_pct":9.49},{"layer_name":"pool","club_name":"CGBD","pool_name":"CGBD IV","cbsa_name":"Virginia Beach","population_pct":0.24},{"layer_name":"pool","club_name":"CGBD","pool_name":"CGBD V","cbsa_name":"Virginia Beach","population_pct":9.45},{"layer_name":"pool","club_name":"CGBD","pool_name":"CGBD VI","cbsa_name":"Virginia Beach","population_pct":0.22},{"layer_name":"pool","club_name":"Old Dominion","pool_name":"Old Dominion I","cbsa_name":"Virginia Beach","population_pct":0.09},{"layer_name":"pool","club_name":"Old Dominion","pool_name":"Old Dominion II","cbsa_name":"Virginia Beach","population_pct":0.33},{"layer_name":"pool","club_name":"Tide","pool_name":"Tide","cbsa_name":"Virginia Beach","population_pct":0.26},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Providence","population_pct":41.04},{"layer_name":"club","club_name":"Bluefish","pool_name":"","cbsa_name":"Providence","population_pct":29.57},{"layer_name":"club","club_name":"Gator SC MA","pool_name":"","cbsa_name":"Providence","population_pct":37.74},{"layer_name":"pool","club_name":"Bluefish","pool_name":"Bluefish I","cbsa_name":"Providence","population_pct":23.18},{"layer_name":"pool","club_name":"Bluefish","pool_name":"Bluefish II","cbsa_name":"Providence","population_pct":0.71},{"layer_name":"pool","club_name":"Bluefish","pool_name":"Bluefish III","cbsa_name":"Providence","population_pct":0.02},{"layer_name":"pool","club_name":"Bluefish","pool_name":"Bluefish IV","cbsa_name":"Providence","population_pct":0.04},{"layer_name":"pool","club_name":"Bluefish","pool_name":"Bluefish V","cbsa_name":"Providence","population_pct":0.06},{"layer_name":"pool","club_name":"Bluefish","pool_name":"Bluefish VI","cbsa_name":"Providence","population_pct":11.01},{"layer_name":"pool","club_name":"Gator SC MA","pool_name":"Gator SC MA V","cbsa_name":"Providence","population_pct":37.74},{"layer_name":"pool","club_name":"Gator SC MA","pool_name":"Gator SC MA VI","cbsa_name":"Providence","population_pct":0.73},{"layer_name":"pool","club_name":"Gator SC MA","pool_name":"Gator SC MA VII","cbsa_name":"Providence","population_pct":29.88},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Milwaukee","population_pct":33.77},{"layer_name":"club","club_name":"EBSC","pool_name":"","cbsa_name":"Milwaukee","population_pct":0.47},{"layer_name":"club","club_name":"Lake Country Swim Team","pool_name":"","cbsa_name":"Milwaukee","population_pct":0.06},{"layer_name":"club","club_name":"Ozaukee","pool_name":"","cbsa_name":"Milwaukee","population_pct":25.47},{"layer_name":"club","club_name":"Schroeder","pool_name":"","cbsa_name":"Milwaukee","population_pct":28.12},{"layer_name":"club","club_name":"Waukesha Express Swim Team","pool_name":"","cbsa_name":"Milwaukee","population_pct":4.34},{"layer_name":"pool","club_name":"EBSC","pool_name":"EBSC I","cbsa_name":"Milwaukee","population_pct":0.37},{"layer_name":"pool","club_name":"EBSC","pool_name":"EBSC II","cbsa_name":"Milwaukee","population_pct":0.13},{"layer_name":"pool","club_name":"Lake Country Swim Team","pool_name":"Lake Country Swim Team","cbsa_name":"Milwaukee","population_pct":0.06},{"layer_name":"pool","club_name":"Ozaukee","pool_name":"Ozaukee I","cbsa_name":"Milwaukee","population_pct":0.26},{"layer_name":"pool","club_name":"Ozaukee","pool_name":"Ozaukee II","cbsa_name":"Milwaukee","population_pct":0.16},{"layer_name":"pool","club_name":"Ozaukee","pool_name":"Ozaukee III","cbsa_name":"Milwaukee","population_pct":24.95},{"layer_name":"pool","club_name":"Ozaukee","pool_name":"Ozaukee V","cbsa_name":"Milwaukee","population_pct":0.1},{"layer_name":"pool","club_name":"Schroeder","pool_name":"Schroeder","cbsa_name":"Milwaukee","population_pct":28.12},{"layer_name":"pool","club_name":"Waukesha Express Swim Team","pool_name":"Waukesha Express Swim Team","cbsa_name":"Milwaukee","population_pct":4.34},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Raleigh","population_pct":32.72},{"layer_name":"club","club_name":"Marlins of Raleigh","pool_name":"","cbsa_name":"Raleigh","population_pct":31.02},{"layer_name":"club","club_name":"New Wave","pool_name":"","cbsa_name":"Raleigh","population_pct":30.61},{"layer_name":"club","club_name":"RSA","pool_name":"","cbsa_name":"Raleigh","population_pct":22.57},{"layer_name":"club","club_name":"TAC Titans","pool_name":"","cbsa_name":"Raleigh","population_pct":15.13},{"layer_name":"pool","club_name":"Marlins of Raleigh","pool_name":"Marlins of Raleigh I","cbsa_name":"Raleigh","population_pct":27.35},{"layer_name":"pool","club_name":"Marlins of Raleigh","pool_name":"Marlins of Raleigh II","cbsa_name":"Raleigh","population_pct":29.23},{"layer_name":"pool","club_name":"Marlins of Raleigh","pool_name":"Marlins of Raleigh III","cbsa_name":"Raleigh","population_pct":1.27},{"layer_name":"pool","club_name":"Marlins of Raleigh","pool_name":"Marlins of Raleigh IV","cbsa_name":"Raleigh","population_pct":26.53},{"layer_name":"pool","club_name":"Marlins of Raleigh","pool_name":"Marlins of Raleigh V","cbsa_name":"Raleigh","population_pct":18.29},{"layer_name":"pool","club_name":"New Wave","pool_name":"New Wave I","cbsa_name":"Raleigh","population_pct":17.18},{"layer_name":"pool","club_name":"New Wave","pool_name":"New Wave II","cbsa_name":"Raleigh","population_pct":18.29},{"layer_name":"pool","club_name":"New Wave","pool_name":"New Wave III","cbsa_name":"Raleigh","population_pct":0.24},{"layer_name":"pool","club_name":"New Wave","pool_name":"New Wave IV","cbsa_name":"Raleigh","population_pct":5.17},{"layer_name":"pool","club_name":"RSA","pool_name":"RSA I","cbsa_name":"Raleigh","population_pct":22.42},{"layer_name":"pool","club_name":"RSA","pool_name":"RSA II","cbsa_name":"Raleigh","population_pct":0.15},{"layer_name":"pool","club_name":"RSA","pool_name":"RSA III","cbsa_name":"Raleigh","population_pct":0.22},{"layer_name":"pool","club_name":"TAC Titans","pool_name":"TAC Titans","cbsa_name":"Raleigh","population_pct":15.13},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Louisville","population_pct":1.81},{"layer_name":"club","club_name":"Cardinal Aquatics","pool_name":"","cbsa_name":"Louisville","population_pct":0.72},{"layer_name":"club","club_name":"Lakeside KY","pool_name":"","cbsa_name":"Louisville","population_pct":1.09},{"layer_name":"pool","club_name":"Cardinal Aquatics","pool_name":"Cardinal Aquatics","cbsa_name":"Louisville","population_pct":0.72},{"layer_name":"pool","club_name":"Lakeside KY","pool_name":"Lakeside KY I","cbsa_name":"Louisville","population_pct":0.36},{"layer_name":"pool","club_name":"Lakeside KY","pool_name":"Lakeside KY II","cbsa_name":"Louisville","population_pct":0.02},{"layer_name":"pool","club_name":"Lakeside KY","pool_name":"Lakeside KY III","cbsa_name":"Louisville","population_pct":0.71},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Richmond","population_pct":7.92},{"layer_name":"club","club_name":"NOVA","pool_name":"","cbsa_name":"Richmond","population_pct":7.44},{"layer_name":"club","club_name":"Poseidon","pool_name":"","cbsa_name":"Richmond","population_pct":0.22},{"layer_name":"club","club_name":"Quest","pool_name":"","cbsa_name":"Richmond","population_pct":0.43},{"layer_name":"pool","club_name":"NOVA","pool_name":"NOVA I","cbsa_name":"Richmond","population_pct":0.73},{"layer_name":"pool","club_name":"NOVA","pool_name":"NOVA II","cbsa_name":"Richmond","population_pct":7.23},{"layer_name":"pool","club_name":"Poseidon","pool_name":"Poseidon","cbsa_name":"Richmond","population_pct":0.22},{"layer_name":"pool","club_name":"Quest","pool_name":"Quest I","cbsa_name":"Richmond","population_pct":0.3},{"layer_name":"pool","club_name":"Quest","pool_name":"Quest II","cbsa_name":"Richmond","population_pct":0.13},{"layer_name":"cbsa","club_name":"","pool_name":"","cbsa_name":"Fresno","population_pct":44.38},{"layer_name":"club","club_name":"Clovis SC","pool_name":"","cbsa_name":"Fresno","population_pct":44.38},{"layer_name":"pool","club_name":"Clovis SC","pool_name":"Clovis SC I","cbsa_name":"Fresno","population_pct":34.59},{"layer_name":"pool","club_name":"Clovis SC","pool_name":"Clovis SC II","cbsa_name":"Fresno","population_pct":22.42},{"layer_name":"pool","club_name":"Clovis SC","pool_name":"Clovis SC III","cbsa_name":"Fresno","population_pct":1.38},{"layer_name":"pool","club_name":"Clovis SC","pool_name":"Clovis SC IV","cbsa_name":"Fresno","population_pct":1.78},{"layer_name":"pool","club_name":"Clovis SC","pool_name":"Clovis SC V","cbsa_name":"Fresno","population_pct":10.46},{"layer_name":"pool","club_name":"Clovis SC","pool_name":"Clovis SC VI","cbsa_name":"Fresno","population_pct":41.07}]
+            full_data = full_data.filter(function(a){return a.layer_name==layer_name})
+            var national_details;
+            if (layer_name == 'club'){
+                national_details = full_data.map(full_data => [full_data.club_name,full_data.population_pct,full_data.cbsa_name]);
+            } else {
+                national_details = full_data.map(full_data => [full_data.pool_name,full_data.population_pct,full_data.cbsa_name]);
+            }
+            national_details = national_details.sort(function (a, b){return b[1] - a[1];}); // why does js sort numeric as string by default
+            // highlight based on metro area if all are selected
+            if (current_filter == '(all)'){
+                var national_details_list_html = national_details.map(function(c){
+                    if(c[2]==cbsa_value){return `<li style='color: #ff2c2c'><b><i>${c[0]}, ${c[1].toFixed(2)}% (${c[2]})</i></b></li>`}
+                    else{return `<li>${c[0]}, ${c[1].toFixed(2)}% (${c[2]})</li>`}
+                })
+            } else {
+                var national_details_list_html = national_details.map(function(c){
+                    if(c[0]==current_filter){return `<li style='color: #ff2c2c'><b><i>${c[0]}, ${c[1].toFixed(2)}% (${c[2]})</i></b></li>`}
+                    else if(c[2]==cbsa_value){return `<li><b><i>${c[0]}, ${c[1].toFixed(2)}% (${c[2]})</i></b></li>`}
+                    else{return `<li>${c[0]}, ${c[1].toFixed(2)}% (${c[2]})</li>`}
+                })
+            }
+            
+            //national_details_list_html = [...new Set(data_details_list_html)];
+            document.getElementById("data-details-national-body").innerHTML = `<ol>${national_details_list_html.join("")}</ol>`
+        }
+        document.getElementById('data-details-header').innerHTML = detail_level_title
+        document.getElementById('data-details-national-header').innerHTML = national_detail_level_title
+        // fix pool/club filter list not updating by checking to see if the cbsa has changed
+        // needed for cases where rendering of tiles happens
+        prior_cbsa_value = cbsa_value;
+    }); // end idle wait
+
+    button = document.getElementById("fly-to-metro-button")
+    button.addEventListener('click', () => {
+        var cbsa_value = document.getElementById("cbsa-selector").value;
+        const fly_to_dict = {
+            "New York":[-74, 40.7],
+            "Los Angeles":[-118.2, 34],
+            "Chicago":[-87.6, 41.9],
+            "Dallas":[-97, 32.8],
+            "Houston":[-95.4,29.7],
+            "Miami":[-80.2,25.9],
+            "Washington":[-77,39],
+            "Atlanta":[-84.4,33.7],
+            "Philadelphia":[-75.2,39.9],
+            "Phoenix":[-112.1,33.4],
+            "Boston":[-71.0,42.4],
+            "San Francisco":[-122.4,37.8],
+            "San Jose":[-121.9,37.3],
+            "Detroit":[-83.0,42.3],
+            "Seattle":[-122.3,47.6],
+            "Minneapolis":[-93.3,45.0],
+            "Tampa":[-82.5,28.0],
+            "San Diego":[-117.1,32.7],
+            "Denver":[-105.0,39.7],
+            "Orlando":[-81.4,28.5],
+            "Charlotte":[-80.8,35.2],
+            "Baltimore":[-76.6,39.3],
+            "St. Louis":[-90.2,38.6],
+            "San Antonio":[-98.5,29.4],
+            "Austin":[-97.7,30.3],
+            "Portland":[-122.7,45.5],
+            "Milwaukee":[-87.9,43.1],
+        }
+        map.flyTo({
+            center:fly_to_dict[cbsa_value],
+            essential: true // this animation is considered essential with respect to prefers-reduced-motion
+        });
+        // set data to display at metro level
+        document.getElementById('data-selector').value = 'cbsa';
+    });
+    map.addControl(new mapboxgl.AttributionControl({
+        customAttribution: 'Map: Andrew Lindstrom | Source: Mobility Database, US Census Bureau, USA Swimming'
+    }));
+    
+</script>
+
+</body>
+</html>
