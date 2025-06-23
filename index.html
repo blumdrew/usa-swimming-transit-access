@@ -252,8 +252,6 @@
     });
     var cbsa_value = document.getElementById("cbsa-selector").value
     var data_selector_value = document.getElementById("data-selector").value
-    console.log(cbsa_value)
-    console.log(data_selector_value)
     map.on('load',() => {
         // Make pointer default
         map.getCanvas().style.cursor = 'default';
@@ -421,6 +419,8 @@
     }); // end load wait
 
     var prior_cbsa_value = undefined;
+    var prior_club_value = undefined;
+    var prior_pool_value = undefined;
     map.on("idle", () =>{
         //// UPDATE MAP FILTERS
         var cbsa_value = document.getElementById("cbsa-selector").value;
